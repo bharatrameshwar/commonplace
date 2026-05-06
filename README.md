@@ -1,5 +1,8 @@
 # Commonplace
 
+[![CI](https://github.com/bharatrameshwar/commonplace/actions/workflows/ci.yml/badge.svg)](https://github.com/bharatrameshwar/commonplace/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A local-first macOS activity tracker with AI-powered classification, a daily commonplace book, and an MCP server for Claude.
 
 Everything stays on your machine. No cloud, no telemetry, no accounts.
