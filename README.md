@@ -95,6 +95,47 @@ Filling these in keeps:
 - AI classifications grounded in your actual role.
 - Internal product/project names from being mistaken for people.
 
+## AI (Ollama)
+
+Commonplace runs all AI locally through [Ollama](https://ollama.com/). Nothing is sent to any external API — your activity stays on your machine.
+
+The default model is **`qwen3:8b`** — a balanced choice that fits comfortably on a 16GB Mac and handles classification, memory extraction, and weekly per-person summaries well. Pull it once with `ollama pull qwen3:8b`.
+
+Configure under `ai:` in `config.yaml`:
+
+```yaml
+ai:
+  ollama_url: "http://localhost:11434"
+  model: "qwen3:8b"
+```
+
+Or override per-process with environment variables — `OLLAMA_URL`, `OLLAMA_MODEL`.
+
+### Where AI is used
+
+- **Classifier** (`local_classifier.py`, runs every 5 min) — categorises each span into Development / Meetings / Communication / etc., and writes a one-line description.
+- **Memory enrichment** (same daemon, second pass) — extracts tickets, people, documents, links, snippets from each classified span; this populates the Commonplace Book.
+- **Weekly per-person summaries** (`tracker/people_summary.py`, nightly via `cleanup.py`) — for each person you interacted with in the last 7 days, generates 2-3 sentences summarising what you discussed.
+- **Daily digest** (dashboard `/api/digest`) — a 3-5 sentence narrative summary of your day on demand.
+
+The capture daemon, dashboard rendering, search, and people-extraction don't use AI — they're plain Python and SQL.
+
+### Trying other models
+
+Anything Ollama can serve will work — adjust `model:` in `config.yaml` and pull it. Some that have been tested:
+
+| Model | Size | Notes |
+|---|---|---|
+| `qwen3:8b` | ~5GB | Default. Good balance of quality and speed. |
+| `qwen3:4b` | ~3GB | Faster on smaller machines; classifications are slightly noisier. |
+| `llama3.1:8b` | ~5GB | Comparable quality. Use if you already have it pulled. |
+
+Larger models (14B+) work but are usually slower than the value warrants for this kind of structured-output task. Models without strong instruction-following or JSON-mode support tend to produce malformed outputs that get silently discarded.
+
+### If Ollama isn't running
+
+The classifier daemon logs `Ollama not running or model not available. Skipping.` and tries again next interval — capture continues unaffected. Classified categories and memory items just won't appear until Ollama comes back up.
+
 ## What runs where
 
 | Component | Path | Purpose |
