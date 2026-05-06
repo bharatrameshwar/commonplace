@@ -128,7 +128,6 @@ Anything Ollama can serve will work — adjust `model:` in `config.yaml` and pul
 |---|---|---|
 | `qwen3:8b` | ~5GB | Default. Good balance of quality and speed. |
 | `qwen3:4b` | ~3GB | Faster on smaller machines; classifications are slightly noisier. |
-| `llama3.1:8b` | ~5GB | Comparable quality. Use if you already have it pulled. |
 
 Larger models (14B+) work but are usually slower than the value warrants for this kind of structured-output task. Models without strong instruction-following or JSON-mode support tend to produce malformed outputs that get silently discarded.
 
