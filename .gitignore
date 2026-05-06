@@ -8,6 +8,7 @@ __pycache__/
 *.db-shm
 *.db-wal
 screenshots/
+!docs/screenshots/
 *.log
 config.yaml
 .idea/
