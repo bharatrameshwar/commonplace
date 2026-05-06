@@ -174,7 +174,13 @@ Then ask Claude things like *"what was I working on yesterday afternoon?"* or *"
 
 SQLite for storage (FTS5 for search). Plain Flask for the dashboard. PyYAML for config. No JS framework — the templates are server-rendered HTML with vanilla JS sprinkles.
 
-Capture is macOS-specific (`AppleScript` for active window + browser URL, `screencapture` for screenshots, `launchd` for scheduling). A Windows port would need to swap those three layers — everything else (DB, dashboard, classifier, MCP, people extraction) is platform-agnostic Python.
+Capture is macOS-specific. A port to Windows or Linux would need to swap three concrete layers:
+
+- **Active window + browser URL** — currently AppleScript via `osascript`, called from `daemon.py` and `tracker/browser.py`. Replace with the OS-native equivalent (Win32 `GetForegroundWindow` + UIA on Windows; X11/Wayland tooling on Linux).
+- **Screenshots** — currently `screencapture` shelled out from `tracker/screenshot.py`. Replace with `mss`, `PIL.ImageGrab`, or platform APIs.
+- **Scheduling** — currently `launchd` plists in `scripts/launchd/`. Replace with Task Scheduler, systemd user units, or cron.
+
+Everything else (the SQLite schema, dashboard, classifier, MCP server, people extraction, config loader) is platform-agnostic Python and ports cleanly.
 
 ## Contributing
 
