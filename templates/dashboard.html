@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity — A Daily Broadsheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      /* Paper */
+      --paper: #F6F1E7;
+      --paper-2: #EFE8D9;
+      --paper-3: #E6DDC9;
+      --ink: #1A1814;
+      --ink-2: #3A342A;
+      --ink-3: #6E6658;
+      --ink-4: #9C9384;
+      --rule: #D9CFB8;
+      --rule-2: #C9BD9F;
+
+      /* Accents */
+      --accent: #C4522B;        /* burnt sienna */
+      --accent-ink: #8A3617;
+      --flag: #B8231A;          /* red flag */
+      --good: #3F7A4A;
+      --warn: #C08A1E;
+
+      /* For JS / Chart.js integration */
+      --bg: var(--paper);
+      --card: var(--paper);
+      --border: var(--rule);
+      --text: var(--ink);
+      --text-secondary: var(--ink-3);
+      --chart-grid: var(--rule);
+      --donut-border: var(--paper);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #1A1814;
+        --paper-2: #221f1a;
+        --paper-3: #2b2720;
+        --ink: #F6F1E7;
+        --ink-2: #E6DDC9;
+        --ink-3: #9C9384;
+        --ink-4: #6E6658;
+        --rule: #3A342A;
+        --rule-2: #4a4336;
+        --accent: #D96A3F;
+        --accent-ink: #E48660;
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      background: var(--paper);
+      color: var(--ink);
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-size: 13px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Typography primitives */
+    .serif { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+    .mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--rule-2); border-radius: 10px; border: 2px solid var(--paper); }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* ICON RAIL SIDEBAR */
+    .rail {
+      width: 56px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      border-right: 1px solid var(--ink);
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 4px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .rail-logo {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Instrument Serif', serif;
+      font-size: 20px;
+      margin-bottom: 24px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .rail a {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      color: var(--ink-2);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Instrument Serif', serif;
+      text-decoration: none;
+      transition: background 0.1s, color 0.1s;
+    }
+    .rail a:hover { background: var(--paper-2); color: var(--ink); }
+    .rail a.active { background: var(--ink); color: var(--paper); }
+    .rail-spacer { flex: 1; }
+    .rail-caption {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-3);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .rail-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8.5px;
+      color: var(--ink-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rail-status .dot {
+      width: 6px; height: 6px; border-radius: 999px;
+      background: var(--good);
+      animation: pulse 2.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    /* MAIN */
+    .main {
+      flex: 1;
+      padding: 0 48px 48px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* MASTHEAD */
+    .masthead {
+      border-bottom: 2px solid var(--ink);
+      padding: 22px 0 14px;
+      margin-bottom: 24px;
+    }
+    .masthead-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .masthead-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .masthead-row h1 {
+      font-family: 'Instrument Serif', serif;
+      font-weight: 400;
+      margin: 0;
+      font-size: 68px;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      font-style: italic;
+      color: var(--ink);
+    }
+    .date-nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+    .date-nav button, .date-nav input {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 6px 10px;
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .date-nav input[type="date"] {
+      padding: 5px 8px;
+    }
+    .date-nav button.today {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .masthead-subtitle {
+      margin-top: 10px;
+      font-family: 'Instrument Serif', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: var(--ink-2);
+    }
+
+    /* HERO */
+    .hero {
+      margin-bottom: 40px;
+    }
+    .hero-top {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 36px;
+      align-items: end;
+      margin-bottom: 16px;
+    }
+    .hero-total {
+      font-family: 'Instrument Serif', serif;
+      font-size: 84px;
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+    .hero-total em {
+      font-size: 44px;
+      font-style: italic;
+    }
+    .hero-total-sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+    .hero-total-sub .mono {
+      color: var(--ink);
+    }
+    .stat-rail {
+      border-left: 1px solid var(--rule-2);
+      padding-left: 32px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .stat {
+      position: relative;
+    }
+    .stat-value {
+      font-family: 'Instrument Serif', serif;
+      font-size: 34px;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .stat-sub {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--ink-3);
+    }
+    .stat.tone-warn .stat-value { color: var(--warn); }
+    .stat.tone-flag .stat-value { color: var(--flag); }
+    .stat.tone-good .stat-value { color: var(--good); }
+
+    /* Personal record trophy badge */
+    .record-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--accent);
+      color: var(--paper);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px 2px 4px;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      cursor: default;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.08);
+    }
+    .record-badge::before {
+      content: '★';
+      font-size: 10px;
+    }
+    .record-tooltip {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      z-index: 50;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      padding: 10px 12px;
+      border-radius: 6px;
+      width: 240px;
+      line-height: 1.5;
+      letter-spacing: 0.01em;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.12);
+    }
+    .record-tooltip b { color: var(--paper); }
+    .record-tooltip .mono { color: var(--paper-3); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+    .record-badge:hover + .record-tooltip { display: block; }
+
+    .stat-tooltip {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 8px;
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      padding: 12px;
+      box-shadow: 8px 8px 0 rgba(0,0,0,0.08);
+      z-index: 50;
+      font-size: 11px;
+      width: 280px;
+    }
+    .stat.has-tooltip:hover .stat-tooltip { display: block; }
+
+    /* RIBBON */
+    .ribbon-wrap { width: 100%; }
+    .ribbon {
+      position: relative;
+      width: 100%;
+      height: 72px;
+      background: var(--paper-2);
+      border-top: 1px solid var(--rule-2);
+      border-bottom: 1px solid var(--rule-2);
+      overflow: hidden;
+    }
+    .ribbon-segment {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      border-right: 1px solid rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: opacity 0.15s;
+      opacity: 0.92;
+    }
+    .ribbon-segment:hover { opacity: 1; }
+    .ribbon-segment.dim { opacity: 0.18; }
+    .ribbon-hourline {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.35);
+      pointer-events: none;
+    }
+    .ribbon-now {
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      width: 0;
+      border-left: 2px solid var(--ink);
+      pointer-events: none;
+    }
+    .ribbon-now::before {
+      content: 'Now';
+      position: absolute;
+      top: -16px;
+      left: -20px;
+      width: 40px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .ribbon-axis {
+      position: relative;
+      height: 18px;
+      margin-top: 4px;
+    }
+    .ribbon-tick {
+      position: absolute;
+      transform: translateX(-50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+    }
+    .ribbon-tick.noon {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .ribbon-startend {
+      position: absolute;
+      top: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+    }
+    .ribbon-startend.end {
+      right: 0;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* TWO-COLUMN — editor's note + stacked bar */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 48px;
+      margin-bottom: 40px;
+    }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--ink);
+      margin-bottom: 14px;
+    }
+    .section-head .eyebrow { flex-shrink: 0; }
+    .section-head-rule {
+      flex: 1;
+      border-bottom: 1px solid var(--rule-2);
+    }
+    .editor-note {
+      font-family: 'Instrument Serif', serif;
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+    .editor-note .drop-cap {
+      font-family: 'Instrument Serif', serif;
+      font-size: 52px;
+      float: left;
+      line-height: 0.85;
+      padding-right: 10px;
+      padding-top: 6px;
+      font-style: italic;
+    }
+    .editor-note em { font-style: italic; }
+    .editor-note b { font-weight: 600; }
+    .editor-note .mono {
+      font-size: 15px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .editor-footnote {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--ink-3);
+    }
+    .editor-footnote .mono {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* STACKED BAR */
+    .stacked-bar {
+      display: flex;
+      width: 100%;
+      height: 14px;
+      border: 1px solid var(--ink);
+    }
+    .stacked-seg {
+      border-right: 1px solid rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .stacked-seg.dim { opacity: 0.25; }
+    .legend-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 20px;
+      row-gap: 6px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      border-bottom: 1px dotted var(--rule);
+      padding-bottom: 5px;
+    }
+    .legend-item.dim { opacity: 0.4; }
+    .legend-swatch {
+      width: 8px;
+      height: 8px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .legend-label {
+      font-size: 12px;
+      color: var(--ink);
+      flex: 1;
+    }
+    .legend-dur {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--ink-2);
+    }
+    .legend-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+      width: 28px;
+      text-align: right;
+    }
+
+    /* TIMELINE */
+    .timeline-section {
+      margin-bottom: 40px;
+    }
+    .timeline-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--ink);
+    }
+    .timeline-head-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      line-height: 1;
+      margin-top: 4px;
+    }
+    .timeline-head-stats {
+      display: flex;
+      gap: 18px;
+      align-items: baseline;
+      font-size: 11px;
+      color: var(--ink-3);
+    }
+    .timeline-head-stats .mono {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .filter-indicator {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      padding: 4px 0 8px;
+      margin-bottom: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Intent-bucket filter pills */
+    .bucket-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0 14px;
+    }
+    .bucket-pill {
+      font-family: 'Inter', sans-serif;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 6px 12px;
+      border: 1px solid var(--rule-2);
+      background: var(--paper);
+      color: var(--ink-2);
+      cursor: pointer;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .bucket-pill:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+    .bucket-pill.active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    .bucket-pill .count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      opacity: 0.7;
+      padding-left: 4px;
+      border-left: 1px solid currentColor;
+      margin-left: 2px;
+      padding-left: 8px;
+    }
+    .bucket-pill.active .count { opacity: 0.85; }
+    .filter-indicator button {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font: inherit;
+      padding: 2px 8px;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+    .tl-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 140px;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--rule);
+      transition: opacity 0.12s, background 0.1s;
+      cursor: pointer;
+    }
+    .tl-row:hover { background: rgba(196, 82, 43, 0.06); }
+    .tl-row.dim { opacity: 0.32; }
+
+    /* Distraction visual marker — diagonal stripes on Personal + Entertainment */
+    .tl-row.personal,
+    .tl-row.distraction {
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent 0px,
+        transparent 10px,
+        rgba(184, 35, 26, 0.06) 10px,
+        rgba(184, 35, 26, 0.06) 11px
+      );
+    }
+    .tl-row.personal:hover,
+    .tl-row.distraction:hover {
+      background:
+        linear-gradient(rgba(196, 82, 43, 0.06), rgba(196, 82, 43, 0.06)),
+        repeating-linear-gradient(
+          -45deg,
+          transparent 0px,
+          transparent 10px,
+          rgba(184, 35, 26, 0.08) 10px,
+          rgba(184, 35, 26, 0.08) 11px
+        );
+    }
+    /* Break is softer — muted warm stripe, not a "penalty" */
+    .tl-row.idle {
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent 0px,
+        transparent 10px,
+        rgba(156, 147, 132, 0.10) 10px,
+        rgba(156, 147, 132, 0.10) 11px
+      );
+    }
+    .tl-row.idle:hover {
+      background:
+        linear-gradient(rgba(196, 82, 43, 0.06), rgba(196, 82, 43, 0.06)),
+        repeating-linear-gradient(
+          -45deg,
+          transparent 0px,
+          transparent 10px,
+          rgba(156, 147, 132, 0.14) 10px,
+          rgba(156, 147, 132, 0.14) 11px
+        );
+    }
+    .tl-time {
+      text-align: right;
+      padding-right: 12px;
+      border-right: 2px solid var(--rule-2);
+    }
+    .tl-time.has-cat {
+      border-right-color: var(--cat-color);
+    }
+    .tl-time-primary {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--ink);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .tl-time-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+      margin-top: 2px;
+    }
+    .tl-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 17px;
+      line-height: 1.25;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+    .tl-meta {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--ink-3);
+      white-space: nowrap;
+    }
+    .tl-meta .mono { letter-spacing: 0.02em; }
+    .tl-meta .sep {
+      opacity: 0.4;
+      margin: 0 8px;
+    }
+    .tl-tag {
+      text-align: right;
+      align-self: start;
+      padding-top: 2px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1.5px solid var(--cat-color, var(--ink-3));
+      padding-bottom: 1px;
+      color: var(--cat-color, var(--ink-3));
+    }
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--cat-color, var(--ink-3));
+      display: inline-block;
+    }
+    .tl-shots {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      display: none;
+    }
+    .tl-shots.open { display: block; }
+    .tl-shots-inner {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+    .tl-shot {
+      flex-shrink: 0;
+      width: 160px;
+      border: 1px solid var(--ink);
+      background: var(--paper-2);
+      padding: 4px;
+    }
+    .tl-shot img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+    }
+    .tl-shot-cap {
+      padding: 3px 2px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* DISPATCH (insights) */
+    .dispatch {
+      margin-bottom: 40px;
+    }
+    .dispatch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+    .dispatch-item {
+      padding: 0 20px;
+      border-right: 1px solid var(--rule);
+    }
+    .dispatch-item:first-child { padding-left: 0; }
+    .dispatch-item:last-child { border-right: none; padding-right: 0; }
+    .dispatch-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .dispatch-value {
+      font-family: 'Instrument Serif', serif;
+      font-size: 40px;
+      line-height: 1;
+      color: var(--ink);
+    }
+    .dispatch-value.headline {
+      font-size: 26px;
+      line-height: 1.1;
+    }
+    .dispatch-sub {
+      font-size: 11px;
+      color: var(--ink-3);
+      margin-top: 8px;
+    }
+
+    /* SCREENSHOTS */
+    .captures {
+      margin-bottom: 40px;
+    }
+    .captures-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+    }
+    .capture {
+      margin: 0;
+    }
+    .capture-frame {
+      border: 1px solid var(--ink);
+      padding: 4px;
+      background: var(--paper-2);
+    }
+    .capture-frame img {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+    }
+    .capture-cap {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+    }
+    .capture-cap .time { color: var(--ink); }
+
+    /* HOURLY */
+    .hourly-section {
+      margin-bottom: 40px;
+    }
+    .hourly-chart-container {
+      height: 220px;
+      position: relative;
+    }
+
+    /* COLOPHON */
+    .colophon {
+      border-top: 2px solid var(--ink);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* LIGHTBOX */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26, 24, 20, 0.92);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 95%;
+      max-height: 95%;
+      border: 1px solid var(--paper);
+    }
+
+    /* REFRESH BAR */
+    .refresh-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+      width: 0;
+      transition: width 0.3s;
+      z-index: 2000;
+    }
+    .refresh-bar.loading { width: 100%; }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--ink-3);
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-size: 16px;
+    }
+
+    /* Hover preview for timeline — floating screenshot card */
+    .tl-preview {
+      position: fixed;
+      z-index: 100;
+      pointer-events: none;
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      box-shadow: 8px 8px 0 rgba(0,0,0,0.1);
+      padding: 6px;
+      display: none;
+    }
+    .tl-preview img {
+      width: 200px;
+      height: 130px;
+      object-fit: cover;
+      display: block;
+    }
+    .tl-preview-cap {
+      margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      color: var(--ink-3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media (max-width: 900px) {
+      .hero-top { grid-template-columns: 1fr; }
+      .stat-rail { border-left: none; padding-left: 0; grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; gap: 32px; }
+      .dispatch-grid { grid-template-columns: repeat(2, 1fr); }
+      .dispatch-item { border-right: none; border-bottom: 1px solid var(--rule); padding: 12px 0; }
+      .captures-grid { grid-template-columns: repeat(3, 1fr); }
+      .main { padding: 0 20px 40px; }
+      .masthead-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .masthead-row h1 { font-size: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Icon rail sidebar -->
+  <nav class="rail">
+    <a href="/" class="rail-logo" title="Activity">A</a>
+    <a href="/" class="active" title="Dashboard">▦</a>
+    <a href="#captures-section" title="Screenshots">▢</a>
+    <a href="/reports" title="Reports">≡</a>
+    <a href="/search" title="Memory">✦</a>
+    <div class="rail-spacer"></div>
+    <div class="rail-status" id="rail-status">
+      <span class="dot"></span> Live
+    </div>
+    <div class="rail-caption">Activity Monitor</div>
+  </nav>
+
+  <!-- Refresh indicator -->
+  <div class="refresh-bar" id="refresh-bar"></div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="this.classList.remove('active')">
+    <img id="lightbox-img" src="" alt="Screenshot">
+  </div>
+
+  <!-- Floating preview for timeline hover -->
+  <div class="tl-preview" id="tl-preview">
+    <img id="tl-preview-img" src="" alt="">
+    <div class="tl-preview-cap">
+      <span id="tl-preview-app"></span>
+      <span id="tl-preview-time"></span>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- MASTHEAD -->
+    <header class="masthead">
+      <div class="masthead-meta">
+        <span id="vol-label">Vol. I — №—</span>
+        <span>Activity · A Daily Broadsheet</span>
+        <span id="masthead-date">—</span>
+      </div>
+      <div class="masthead-row">
+        <h1 id="masthead-headline">The Day, in Full.</h1>
+        <div class="date-nav">
+          <button onclick="changeDate(-1)">←</button>
+          <input type="date" id="date-picker" onchange="loadDashboard()">
+          <button onclick="changeDate(1)">→</button>
+          <button class="today" onclick="goToday()">Today</button>
+        </div>
+      </div>
+      <div class="masthead-subtitle" id="masthead-subtitle">
+        <!-- short italic tagline populated by JS -->
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow" style="margin-bottom:10px;">The Record</div>
+          <div class="hero-total" id="hero-total">
+            <span id="hero-hrs">0</span><em>h</em>
+            <span id="hero-mins">00</span><em>m</em>
+          </div>
+          <div class="hero-total-sub" id="hero-sub">
+            <span class="mono" id="hero-start">—</span>
+            to
+            <span class="mono" id="hero-end">—</span>
+            — tracked this session
+          </div>
+        </div>
+
+        <div class="stat-rail">
+          <div class="stat" id="stat-focus">
+            <div class="eyebrow" style="margin-bottom:6px;">Focus Score</div>
+            <div class="stat-value" id="focus-score">--</div>
+            <div class="stat-sub" id="focus-label">—</div>
+          </div>
+          <div class="stat">
+            <div class="eyebrow" style="margin-bottom:6px;">Purposeful</div>
+            <div class="stat-value" id="stat-purposeful">--</div>
+            <div class="stat-sub" id="stat-purposeful-sub">—</div>
+          </div>
+          <div class="stat" id="stat-switches-card">
+            <div class="eyebrow" style="margin-bottom:6px;">Switches</div>
+            <div class="stat-value" id="stat-switches">--</div>
+            <div class="stat-sub" id="stat-switches-sub">—</div>
+          </div>
+          <div class="stat">
+            <div class="eyebrow" style="margin-bottom:6px;">Top Category</div>
+            <div class="stat-value" style="font-size:22px;" id="stat-top">--</div>
+            <div class="stat-sub" id="stat-top-sub">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ribbon-wrap">
+        <div class="ribbon" id="ribbon"></div>
+        <div class="ribbon-axis" id="ribbon-axis"></div>
+      </div>
+    </section>
+
+    <!-- TWO COLUMN: Editor's Note + Stacked Bar -->
+    <section class="two-col">
+      <div>
+        <div class="section-head">
+          <div class="eyebrow">Editor's Note</div>
+          <div class="section-head-rule"></div>
+        </div>
+        <p class="editor-note" id="editor-note"></p>
+        <div class="editor-footnote" id="editor-footnote"></div>
+      </div>
+      <aside>
+        <div class="section-head">
+          <div class="eyebrow">How The Time Went</div>
+          <div class="section-head-rule"></div>
+        </div>
+        <div class="stacked-bar" id="stacked-bar"></div>
+        <div class="legend-grid" id="legend"></div>
+      </aside>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="timeline-section" id="timeline-section">
+      <div class="timeline-head">
+        <div>
+          <div class="eyebrow">The Day in Detail</div>
+          <div class="timeline-head-title">Activity Timeline</div>
+        </div>
+        <div class="timeline-head-stats">
+          <div><span class="mono" id="tl-span-count">0</span> spans</div>
+          <div><span class="mono" id="tl-obs-count">0</span> observations</div>
+          <div><span class="mono" id="tl-unclassified">0</span> unclassified</div>
+        </div>
+      </div>
+      <div class="bucket-pills" id="bucket-pills"></div>
+      <div class="filter-indicator" id="filter-indicator" style="display:none;"></div>
+      <div id="timeline"></div>
+    </section>
+
+    <!-- DISPATCH (insights) -->
+    <section class="dispatch">
+      <div class="section-head">
+        <div class="eyebrow">Dispatch</div>
+        <div class="section-head-rule"></div>
+        <div class="mono" style="font-size:10px;color:var(--ink-3);">03 OBSERVATIONS</div>
+      </div>
+      <div class="dispatch-grid" id="dispatch-grid"></div>
+    </section>
+
+    <!-- CAPTURES -->
+    <section class="captures" id="captures-section">
+      <div class="section-head">
+        <div class="eyebrow">Recent Captures</div>
+        <div class="section-head-rule"></div>
+        <div class="mono" style="font-size:10px;color:var(--ink-3);">Auto · every 30 seconds</div>
+      </div>
+      <div class="captures-grid" id="screenshots"></div>
+    </section>
+
+    <!-- COLOPHON -->
+    <footer class="colophon">
+      <span>Printed from local observations</span>
+      <span id="colophon-meta">Classifier · Qwen3 8B · <span id="colophon-obs">—</span> observations</span>
+      <span>Tomorrow: a new edition.</span>
+    </footer>
+  </main>
+
+<script>
+let hourlyChart = null;
+let currentDate = new Date().toLocaleDateString('en-CA');
+let allTimeline = [];
+let activeFilter = null;
+let currentSummary = null;
+
+// Category buckets — map category → intent bucket
+const PERSONAL_CATS = new Set(['Personal']);
+const DISTRACTION_CATS = new Set(['Entertainment']);
+const IDLE_CATS = new Set(['Break', 'Idle/AFK', 'Idle']);
+function bucketFor(cat) {
+  if (PERSONAL_CATS.has(cat)) return 'personal';
+  if (DISTRACTION_CATS.has(cat)) return 'distraction';
+  if (IDLE_CATS.has(cat)) return 'idle';
+  return 'core';
+}
+let activeBucket = 'all';  // all | core | personal | distraction | idle
+
+document.getElementById('date-picker').value = currentDate;
+
+function changeDate(delta) {
+  const d = new Date(currentDate);
+  d.setDate(d.getDate() + delta);
+  currentDate = d.toISOString().split('T')[0];
+  document.getElementById('date-picker').value = currentDate;
+  loadDashboard();
+}
+function goToday() {
+  currentDate = new Date().toLocaleDateString('en-CA');
+  document.getElementById('date-picker').value = currentDate;
+  loadDashboard();
+}
+
+async function loadDashboard() {
+  currentDate = document.getElementById('date-picker').value;
+  const bar = document.getElementById('refresh-bar');
+  bar.classList.add('loading');
+
+  try {
+    const [summary, screenshots, records] = await Promise.all([
+      fetch(`/api/summary?date=${currentDate}`).then(r => r.json()),
+      fetch('/api/recent_screenshots').then(r => r.json()),
+      fetch(`/api/records?date=${currentDate}`).then(r => r.json()).catch(() => []),
+    ]);
+
+    allTimeline = summary.timeline || [];
+    activeFilter = null;
+    currentSummary = summary;
+
+    renderMasthead(summary);
+    renderHero(summary);
+    renderRibbon(summary);
+    renderEditorNote(summary);
+    renderStackedBar(summary);
+    renderLegend(summary);
+    renderBucketPills(allTimeline);
+    renderTimeline(allTimeline);
+    renderTimelineHead(summary);
+    renderRecords(records);
+    renderDispatch(summary);
+    renderScreenshots(screenshots);
+
+    document.getElementById('colophon-obs').textContent =
+      (summary.observation_count || 0).toLocaleString();
+    document.getElementById('rail-status').innerHTML =
+      '<span class="dot"></span> ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  } catch (e) {
+    console.error('Failed to load dashboard:', e);
+  } finally {
+    bar.classList.remove('loading');
+  }
+}
+
+/* ---------------- RENDERERS ---------------- */
+
+function renderMasthead(data) {
+  const d = new Date(currentDate + 'T00:00:00');
+  const dayNum = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  document.getElementById('vol-label').textContent =
+    `Vol. ${romanize(d.getFullYear() - 2025)} — №${String(dayNum).padStart(3, '0')}`;
+  document.getElementById('masthead-date').textContent =
+    data.date_display || d.toDateString();
+
+  // Headline — dynamic based on top category
+  const top = (data.categories || []).sort((a,b) => b.seconds - a.seconds)[0];
+  const headlines = [
+    'The Day, in Full.',
+    'A Day at the Desk.',
+    'Hours, Accounted For.',
+    'The Record of Today.',
+    'In the Margins of Work.',
+  ];
+  // Deterministic pick based on date
+  const idx = (d.getDate() + d.getMonth()) % headlines.length;
+  document.getElementById('masthead-headline').textContent = headlines[idx];
+
+  // Subtitle — short italic editorial tagline
+  const subtitle = buildSubtitle(data);
+  document.getElementById('masthead-subtitle').textContent = subtitle;
+}
+
+function romanize(n) {
+  if (n < 1) return 'I';
+  const map = [['M',1000],['CM',900],['D',500],['CD',400],['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];
+  let out = '';
+  for (const [sym, val] of map) { while (n >= val) { out += sym; n -= val; } }
+  return out;
+}
+
+function buildSubtitle(data) {
+  const cats = (data.categories || []).sort((a,b) => b.seconds - a.seconds);
+  if (!cats.length) return '— Awaiting the day\'s first entries.';
+  const top = cats[0];
+  const total = cats.reduce((s,c) => s + c.seconds, 0);
+  const topPct = Math.round(top.seconds / total * 100);
+  const secondTop = cats[1];
+  if (topPct >= 50) {
+    return `— A day given largely to ${top.category.toLowerCase()}${secondTop ? `, with ${secondTop.category.toLowerCase()} in the margins.` : '.'}`;
+  } else if (cats.length >= 3) {
+    return `— A day split across ${top.category.toLowerCase()}, ${secondTop.category.toLowerCase()}, and ${cats[2].category.toLowerCase()}.`;
+  }
+  return `— Primarily ${top.category.toLowerCase()} today.`;
+}
+
+function renderHero(data) {
+  const totalSec = data.total_seconds || 0;
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  document.getElementById('hero-hrs').textContent = h;
+  document.getElementById('hero-mins').textContent = String(m).padStart(2, '0');
+
+  // Start/end from active window string "09:22 AM - 04:12 PM"
+  const win = (data.active_window || '').split(' - ');
+  document.getElementById('hero-start').textContent = win[0] || '—';
+  document.getElementById('hero-end').textContent = win[1] || '—';
+
+  // Stats: focus score, purposeful, switches, top category
+  const focus = computeFocus(data);
+  const focusEl = document.getElementById('focus-score');
+  focusEl.textContent = focus.score != null ? focus.score : '--';
+  document.getElementById('focus-label').textContent = focus.label;
+  const focusStat = document.getElementById('stat-focus');
+  focusStat.classList.remove('tone-warn','tone-flag','tone-good');
+  if (focus.score != null) {
+    if (focus.score >= 70) focusStat.classList.add('tone-good');
+    else if (focus.score >= 40) focusStat.classList.add('tone-warn');
+    else focusStat.classList.add('tone-flag');
+  }
+
+  document.getElementById('stat-purposeful').textContent = fmtShort(focus.purposefulSec);
+  const catSum = (data.categories || []).reduce((s,c) => s + c.seconds, 0);
+  const prodPct = catSum ? Math.round(focus.purposefulSec / catSum * 100) : 0;
+  document.getElementById('stat-purposeful-sub').textContent =
+    catSum ? `${prodPct}% of day` : '—';
+
+  document.getElementById('stat-switches').textContent = focus.switches;
+  const switchCard = document.getElementById('stat-switches-card');
+  switchCard.classList.remove('tone-warn','tone-flag','tone-good');
+  if (focus.switches > 25) { switchCard.classList.add('tone-flag'); document.getElementById('stat-switches-sub').textContent = 'high — consider batching'; }
+  else if (focus.switches > 12) { switchCard.classList.add('tone-warn'); document.getElementById('stat-switches-sub').textContent = 'moderate'; }
+  else { document.getElementById('stat-switches-sub').textContent = 'focused'; }
+
+  const top = (data.categories || []).sort((a,b) => b.seconds - a.seconds)[0];
+  if (top) {
+    document.getElementById('stat-top').textContent = top.category;
+    document.getElementById('stat-top').style.color = top.color;
+    document.getElementById('stat-top-sub').textContent = fmtShort(top.seconds);
+  } else {
+    document.getElementById('stat-top').textContent = '—';
+    document.getElementById('stat-top-sub').textContent = '';
+  }
+}
+
+function renderRecords(records) {
+  // Clear any existing badges first
+  document.querySelectorAll('.record-badge, .record-tooltip').forEach(el => el.remove());
+  if (!records || !records.length) return;
+
+  // Metric → which stat card to badge
+  const metricToTarget = {
+    'focus_score': 'stat-focus',
+    'purposeful_total': 'stat-focus',         // overflow — shows on same card
+    'longest_deep_block': 'stat-purposeful-card',
+  };
+
+  // Find or create wrapper for purposeful stat (it has no id yet)
+  const purposefulCard = document.getElementById('stat-purposeful')?.closest('.stat');
+  if (purposefulCard && !purposefulCard.id) purposefulCard.id = 'stat-purposeful-card';
+
+  records.forEach(r => {
+    let targetId = metricToTarget[r.metric];
+    if (!targetId) return;
+    // Distribute multiple records across cards so they don't stack on one
+    let card = document.getElementById(targetId);
+    if (!card) return;
+    if (card.querySelector('.record-badge')) {
+      // Already has a badge — put this one on any free card instead
+      const fallback = ['stat-focus', 'stat-purposeful-card', 'stat-switches-card']
+        .map(id => document.getElementById(id))
+        .find(el => el && !el.querySelector('.record-badge'));
+      if (!fallback) return;
+      card = fallback;
+    }
+
+    const badge = document.createElement('span');
+    badge.className = 'record-badge';
+    badge.textContent = 'record';
+    const tooltip = document.createElement('div');
+    tooltip.className = 'record-tooltip';
+    const windowTxt = r.window_days === 7 ? '7-day' : '30-day';
+    const prev = r.prev_best_display && r.prev_best_date
+      ? `Previous best: <b>${escHtml(r.prev_best_display)}</b> on <span class="mono">${escHtml(r.prev_best_date)}</span>.`
+      : '';
+    tooltip.innerHTML = `<b>${escHtml(r.label)}</b> (${windowTxt})<br>Today: <b>${escHtml(r.value_display)}</b>${r.detail ? `<br><span class="mono">${escHtml(r.detail.slice(0,80))}</span>` : ''}<br>${prev}`;
+    card.appendChild(badge);
+    card.appendChild(tooltip);
+  });
+}
+
+function computeFocus(data) {
+  const purposefulCats = new Set(['Development', 'Research', 'Documentation', 'Deep Work', 'Meetings', 'Meetings/Calls', 'Planning', 'Communication']);
+  const distractionCats = new Set(['Personal', 'Entertainment', 'Break']);
+  const cats = data.categories || [];
+  const total = cats.reduce((s, c) => s + c.seconds, 0);
+  if (!total) return { score: null, label: 'No data yet', purposefulSec: 0, distractionSec: 0, switches: 0 };
+
+  const purposefulSec = cats.filter(c => purposefulCats.has(c.category)).reduce((s,c) => s + c.seconds, 0);
+  const distractionSec = cats.filter(c => distractionCats.has(c.category)).reduce((s,c) => s + c.seconds, 0);
+  let switches = 0;
+  const tl = data.timeline || [];
+  for (let i = 1; i < tl.length; i++) if (tl[i].category !== tl[i-1].category) switches++;
+
+  const purposefulRatio = purposefulSec / total;
+  const distractionRatio = distractionSec / total;
+  const maxSwitches = 40;
+  const switchScore = Math.max(0, 1 - switches / maxSwitches);
+  const score = Math.round((purposefulRatio * 40) + (switchScore * 30) + ((1 - distractionRatio) * 30));
+
+  const labels = [[80,'Laser Focus'],[60,'Solid Focus'],[40,'Moderate'],[20,'Scattered'],[0,'Fragmented']];
+  const label = labels.find(([min]) => score >= min)[1];
+  return { score, label, purposefulSec, distractionSec, switches };
+}
+
+function renderRibbon(data) {
+  const ribbon = document.getElementById('ribbon');
+  const axis = document.getElementById('ribbon-axis');
+  ribbon.innerHTML = '';
+  axis.innerHTML = '';
+
+  const tl = data.timeline || [];
+  if (!tl.length) {
+    ribbon.innerHTML = '<div class="empty-state" style="padding:20px;font-size:12px;">Nothing tracked yet.</div>';
+    return;
+  }
+
+  // Derive day bounds from timeline (minutes since midnight)
+  const firstMin = hmToMin(tl[0].start);
+  const lastMin = hmToMin(tl[tl.length-1].end);
+  const dayStart = Math.max(0, firstMin - 30);       // pad 30m before
+  const dayEnd = Math.min(24*60, lastMin + 30);      // pad 30m after
+  const dayTotal = dayEnd - dayStart;
+
+  tl.forEach((s, i) => {
+    const sMin = hmToMin(s.start);
+    const eMin = hmToMin(s.end);
+    const leftPct = ((sMin - dayStart) / dayTotal) * 100;
+    const wPct = Math.max(0.2, ((eMin - sMin) / dayTotal) * 100);
+    const seg = document.createElement('div');
+    seg.className = 'ribbon-segment';
+    seg.dataset.idx = i;
+    seg.dataset.cat = s.category;
+    seg.style.left = leftPct + '%';
+    seg.style.width = wPct + '%';
+    seg.style.background = s.color || '#C9BD9F';
+    seg.title = `${s.start}–${s.end} · ${s.category}`;
+    seg.addEventListener('mouseenter', () => hoverCategory(s.category));
+    seg.addEventListener('mouseleave', () => hoverCategory(null));
+    seg.addEventListener('click', () => filterByCategory(s.category));
+    ribbon.appendChild(seg);
+  });
+
+  // Hour ticks
+  const firstHour = Math.ceil(dayStart / 60);
+  const lastHour = Math.floor(dayEnd / 60);
+  for (let h = firstHour; h <= lastHour; h++) {
+    const xPct = ((h * 60 - dayStart) / dayTotal) * 100;
+    if (xPct < 1 || xPct > 99) continue;
+    const line = document.createElement('div');
+    line.className = 'ribbon-hourline';
+    line.style.left = xPct + '%';
+    ribbon.appendChild(line);
+
+    const tick = document.createElement('div');
+    tick.className = 'ribbon-tick' + (h === 12 ? ' noon' : '');
+    tick.style.left = xPct + '%';
+    const hr12 = ((h + 11) % 12) + 1;
+    tick.textContent = h === 12 ? '12 PM' : (h === 0 ? '12 AM' : hr12);
+    axis.appendChild(tick);
+  }
+
+  // "Now" marker — only if viewing today
+  const today = new Date().toLocaleDateString('en-CA');
+  if (currentDate === today) {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    if (nowMin >= dayStart && nowMin <= dayEnd) {
+      const xPct = ((nowMin - dayStart) / dayTotal) * 100;
+      const mark = document.createElement('div');
+      mark.className = 'ribbon-now';
+      mark.style.left = xPct + '%';
+      ribbon.appendChild(mark);
+    }
+  }
+
+  // Start/end labels
+  const startLabel = document.createElement('div');
+  startLabel.className = 'ribbon-startend';
+  startLabel.textContent = minToHM(dayStart);
+  axis.appendChild(startLabel);
+  const endLabel = document.createElement('div');
+  endLabel.className = 'ribbon-startend end';
+  endLabel.textContent = minToHM(dayEnd);
+  axis.appendChild(endLabel);
+}
+
+function hmToMin(hm) {
+  // "09:22" or "09:22 AM" or "09:22 PM" → minutes
+  if (!hm) return 0;
+  const [t, suffix] = hm.split(' ');
+  const [h, m] = t.split(':').map(Number);
+  let hr = h;
+  if (suffix === 'PM' && h !== 12) hr += 12;
+  if (suffix === 'AM' && h === 12) hr = 0;
+  return hr * 60 + (m || 0);
+}
+
+function minToHM(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  const hr12 = ((h + 11) % 12) + 1;
+  const suffix = h >= 12 ? 'PM' : 'AM';
+  return `${hr12}:${String(m).padStart(2,'0')} ${suffix}`;
+}
+
+function renderEditorNote(data) {
+  const el = document.getElementById('editor-note');
+  const foot = document.getElementById('editor-footnote');
+  const cats = (data.categories || []).sort((a,b) => b.seconds - a.seconds);
+  const tl = data.timeline || [];
+
+  if (!cats.length || !tl.length) {
+    el.innerHTML = '<span class="drop-cap">—</span>No classified activity yet. Run the classifier to populate the day\'s record.';
+    foot.innerHTML = '';
+    return;
+  }
+
+  const focus = computeFocus(data);
+  const top = cats[0];
+  const total = data.total_seconds || 1;
+  const topPct = Math.round(top.seconds / total * 100);
+  const firstSpan = tl[0];
+  const lastSpan = tl[tl.length - 1];
+
+  // Try to find a "shift" moment — when category first changes to Development/Research/Documentation
+  const purposeful = new Set(['Development','Research','Documentation','Planning']);
+  const deepStart = tl.find(s => purposeful.has(s.category));
+
+  const firstCatLc = firstSpan.category.toLowerCase();
+
+  let paragraph = `<span class="drop-cap">T</span>`;
+  paragraph += `he day opened in the register of <em>${firstCatLc}</em> — `;
+  paragraph += `<span class="mono">${firstSpan.start}</span>, `;
+  paragraph += firstSpan.description ? `with ${escHtml(firstSpan.description.toLowerCase())}` : firstSpan.app;
+  paragraph += '. ';
+
+  if (deepStart && deepStart !== firstSpan) {
+    paragraph += `Work proper settled in around <span class="mono">${deepStart.start}</span> `;
+    paragraph += `with <b>${escHtml(deepStart.category)}</b>. `;
+  }
+
+  paragraph += `${escHtml(top.category)} dominated — <b>${fmtDur(top.seconds)}</b> (${topPct}%). `;
+
+  if (focus.switches > 25) {
+    paragraph += `The day fragmented across <b>${focus.switches} category switches</b>; focus was hard to hold. `;
+  } else if (focus.switches <= 10) {
+    paragraph += `With only <b>${focus.switches} switches</b>, the day held its shape. `;
+  } else {
+    paragraph += `<b>${focus.switches} switches</b> — a moderate rhythm. `;
+  }
+
+  paragraph += `The record closes at <span class="mono">${lastSpan.end}</span>.`;
+
+  el.innerHTML = paragraph;
+
+  // Footnote
+  foot.innerHTML = `
+    <span><span class="mono">${focus.switches}</span> category switches</span>
+    <span><span class="mono">${fmtDur(focus.distractionSec)}</span> distracted</span>
+    <span><span class="mono">${fmtDur(focus.purposefulSec)}</span> purposeful</span>
+    <span><span class="mono">${data.unclassified_count || 0}</span> unclassified</span>
+  `;
+}
+
+function renderStackedBar(data) {
+  const bar = document.getElementById('stacked-bar');
+  bar.innerHTML = '';
+  const cats = (data.categories || []).sort((a,b) => b.seconds - a.seconds);
+  const total = cats.reduce((s,c) => s + c.seconds, 0);
+  if (!total) return;
+
+  cats.forEach(c => {
+    const seg = document.createElement('div');
+    seg.className = 'stacked-seg';
+    seg.dataset.cat = c.category;
+    seg.style.width = ((c.seconds / total) * 100) + '%';
+    seg.style.background = c.color;
+    seg.title = `${c.category} · ${fmtDur(c.seconds)}`;
+    seg.addEventListener('mouseenter', () => hoverCategory(c.category));
+    seg.addEventListener('mouseleave', () => hoverCategory(null));
+    seg.addEventListener('click', () => filterByCategory(c.category));
+    bar.appendChild(seg);
+  });
+}
+
+function renderLegend(data) {
+  const el = document.getElementById('legend');
+  const cats = (data.categories || []).sort((a,b) => b.seconds - a.seconds);
+  const total = cats.reduce((s,c) => s + c.seconds, 0);
+
+  el.innerHTML = cats.map(c => {
+    const pct = total ? Math.round(c.seconds / total * 100) : 0;
+    return `<div class="legend-item" data-cat="${escAttr(c.category)}" onclick="filterByCategory('${escJs(c.category)}')"
+        onmouseenter="hoverCategory('${escJs(c.category)}')"
+        onmouseleave="hoverCategory(null)">
+      <span class="legend-swatch" style="background:${c.color}"></span>
+      <span class="legend-label">${escHtml(c.category)}</span>
+      <span class="legend-dur">${fmtDur(c.seconds)}</span>
+      <span class="legend-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function hoverCategory(cat) {
+  // Dim non-matching ribbon + bar + legend + timeline rows
+  document.querySelectorAll('.ribbon-segment').forEach(el => {
+    el.classList.toggle('dim', cat && el.dataset.cat !== cat);
+  });
+  document.querySelectorAll('.stacked-seg').forEach(el => {
+    el.classList.toggle('dim', cat && el.dataset.cat !== cat);
+  });
+  document.querySelectorAll('.legend-item').forEach(el => {
+    el.classList.toggle('dim', cat && el.dataset.cat !== cat);
+  });
+  document.querySelectorAll('.tl-row').forEach(el => {
+    el.classList.toggle('dim', cat && el.dataset.cat !== cat);
+  });
+}
+
+function renderTimelineHead(data) {
+  document.getElementById('tl-span-count').textContent = (data.timeline || []).length;
+  document.getElementById('tl-obs-count').textContent = (data.observation_count || 0).toLocaleString();
+  document.getElementById('tl-unclassified').textContent = data.unclassified_count || 0;
+}
+
+function renderTimeline(timeline) {
+  const el = document.getElementById('timeline');
+  if (!timeline.length) {
+    el.innerHTML = '<div class="empty-state">— No classified activity yet. Run the classifier to see your day set in type.</div>';
+    return;
+  }
+  // Filter ≥2m and merge consecutive same-category
+  const filtered = timeline.filter(t => t.duration_minutes >= 2);
+  const groups = [];
+  let current = null;
+  for (const item of filtered) {
+    if (current && current.category === item.category && current.end === item.start) {
+      current.end = item.end;
+      current.duration_minutes += item.duration_minutes;
+      current.items.push(item);
+    } else {
+      current = { ...item, items: [item] };
+      groups.push(current);
+    }
+  }
+
+  el.innerHTML = groups.map((g, i) => {
+    const color = g.color || '#9C9384';
+    const descs = [...new Set(g.items.map(x => x.description).filter(Boolean))];
+    const title = descs[0] || g.app || 'Untitled';
+    const extraTitles = descs.slice(1, 3);
+    const titleFull = extraTitles.length ? `${title} <span style="color:var(--ink-3);font-style:italic;">· ${escHtml(extraTitles.join(' · '))}</span>` : escHtml(title);
+    const dur = g.duration_minutes >= 60
+      ? `${Math.floor(g.duration_minutes/60)}h ${Math.round(g.duration_minutes%60)}m`
+      : `${Math.round(g.duration_minutes)}m`;
+    const obsIds = g.items.flatMap(x => x.observation_ids || []).join(',');
+    const bucket = bucketFor(g.category);
+    return `<div class="tl-row ${bucket}" data-cat="${escAttr(g.category)}" data-obs="${obsIds}"
+        data-app="${escAttr(g.app || '')}" data-time="${escAttr(g.start)}"
+        style="--cat-color:${color}"
+        onclick="toggleSpanScreenshots(this)"
+        onmouseenter="hoverCategory('${escJs(g.category)}'); showRowPreview(this, event)"
+        onmousemove="moveRowPreview(event)"
+        onmouseleave="hoverCategory(null); hideRowPreview()">
+      <div class="tl-time has-cat" style="border-right-color:${color}">
+        <div class="tl-time-primary">${escHtml(g.start)}</div>
+        <div class="tl-time-sub">+ ${dur}</div>
+      </div>
+      <div>
+        <div class="tl-title">${titleFull}</div>
+        <div class="tl-meta">
+          <span class="mono">${escHtml(g.app || '')}</span>
+          <span class="sep">·</span>
+          <span class="mono">${escHtml(g.start)}&nbsp;—&nbsp;${escHtml(g.end)}</span>
+          ${g.subcategory ? `<span class="sep">·</span><span>${escHtml(g.subcategory)}</span>` : ''}
+        </div>
+        <div class="tl-shots"></div>
+      </div>
+      <div class="tl-tag">
+        <span class="tag" style="--cat-color:${color}">
+          <span class="tag-dot"></span>${escHtml(g.category)}
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function toggleSpanScreenshots(row) {
+  const container = row.querySelector('.tl-shots');
+  const obsIds = row.dataset.obs;
+  if (container.classList.contains('open')) {
+    container.classList.remove('open');
+    return;
+  }
+  if (!obsIds) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--ink-3);font-style:italic;">No screenshots.</div>';
+    container.classList.add('open');
+    return;
+  }
+  if (container.dataset.loaded) {
+    container.classList.add('open');
+    return;
+  }
+  container.innerHTML = '<div style="font-size:11px;color:var(--ink-3);font-style:italic;">Fetching...</div>';
+  container.classList.add('open');
+  try {
+    const shots = await fetch(`/api/span_screenshots?obs_ids=${obsIds}`).then(r => r.json());
+    if (!shots.length) {
+      container.innerHTML = '<div style="font-size:11px;color:var(--ink-3);font-style:italic;">No screenshots for this span.</div>';
+      container.dataset.loaded = '1';
+      return;
+    }
+    container.innerHTML = `<div class="tl-shots-inner">` +
+      shots.map(s => {
+        const time = s.timestamp?.split('T')[1]?.substring(0, 5) || '';
+        return `<div class="tl-shot">
+          <img src="/api/screenshots/${s.id}" loading="lazy" onclick="event.stopPropagation();openLightbox(${s.id})">
+          <div class="tl-shot-cap">${time}</div>
+        </div>`;
+      }).join('') + `</div>`;
+    container.dataset.loaded = '1';
+  } catch(e) {
+    container.innerHTML = '<div style="font-size:11px;color:var(--flag);">Failed to load screenshots.</div>';
+  }
+}
+
+/* ------- Floating screenshot preview on timeline hover ------- */
+const _previewCache = {};        // obsIds → {id} or null (no screenshot)
+let _previewActiveRow = null;    // element currently hovered
+let _previewTimer = null;
+
+async function showRowPreview(row, evt) {
+  _previewActiveRow = row;
+  moveRowPreview(evt);
+  const obsIds = row.dataset.obs;
+  const app = row.dataset.app;
+  const time = row.dataset.time;
+  if (!obsIds) return;
+
+  // Short debounce so preview doesn't flicker on casual mouse-through
+  clearTimeout(_previewTimer);
+  _previewTimer = setTimeout(async () => {
+    // If row changed before timeout fired, abort
+    if (_previewActiveRow !== row) return;
+
+    let cached = _previewCache[obsIds];
+    if (cached === undefined) {
+      try {
+        const shots = await fetch(`/api/span_screenshots?obs_ids=${obsIds}`).then(r => r.json());
+        cached = shots && shots.length ? { id: shots[0].id, time: shots[0].timestamp } : null;
+      } catch { cached = null; }
+      _previewCache[obsIds] = cached;
+    }
+    // If mouse left before fetch finished, don't show
+    if (_previewActiveRow !== row) return;
+    if (!cached) return;
+
+    const panel = document.getElementById('tl-preview');
+    document.getElementById('tl-preview-img').src = `/api/screenshots/${cached.id}`;
+    document.getElementById('tl-preview-app').textContent = app;
+    document.getElementById('tl-preview-time').textContent = time;
+    panel.style.display = 'block';
+  }, 180);
+}
+
+function moveRowPreview(evt) {
+  const panel = document.getElementById('tl-preview');
+  const pad = 16;
+  const panelW = 214, panelH = 170;
+  let x = evt.clientX + pad;
+  let y = evt.clientY + pad;
+  if (x + panelW > window.innerWidth)  x = evt.clientX - panelW - pad;
+  if (y + panelH > window.innerHeight) y = evt.clientY - panelH - pad;
+  panel.style.left = x + 'px';
+  panel.style.top  = y + 'px';
+}
+
+function hideRowPreview() {
+  _previewActiveRow = null;
+  clearTimeout(_previewTimer);
+  const panel = document.getElementById('tl-preview');
+  panel.style.display = 'none';
+  document.getElementById('tl-preview-img').src = '';
+}
+
+function filterByCategory(cat) {
+  if (activeFilter === cat) activeFilter = null;
+  else { activeFilter = cat; activeBucket = 'all'; updateBucketPillsActive(); }
+  applyTimelineFilter();
+}
+
+function filterByBucket(bucket) {
+  activeBucket = bucket;
+  activeFilter = null;                   // category filter yields to bucket
+  updateBucketPillsActive();
+  applyTimelineFilter();
+}
+
+function applyTimelineFilter() {
+  let filtered = allTimeline;
+  if (activeFilter) {
+    filtered = filtered.filter(t => t.category === activeFilter);
+  } else if (activeBucket !== 'all') {
+    filtered = filtered.filter(t => bucketFor(t.category) === activeBucket);
+  }
+  renderTimeline(filtered);
+
+  const indicator = document.getElementById('filter-indicator');
+  if (activeFilter) {
+    indicator.innerHTML = `Filtered: <b>${escHtml(activeFilter)}</b> <button onclick="filterByCategory('${escJs(activeFilter)}')">Clear</button>`;
+    indicator.style.display = 'block';
+  } else {
+    indicator.style.display = 'none';
+  }
+}
+
+function updateBucketPillsActive() {
+  document.querySelectorAll('.bucket-pill').forEach(el => {
+    el.classList.toggle('active', el.dataset.bucket === activeBucket);
+  });
+}
+
+function renderBucketPills(timeline) {
+  const el = document.getElementById('bucket-pills');
+  // Count spans per bucket
+  const counts = { all: 0, core: 0, personal: 0, distraction: 0, idle: 0 };
+  timeline.forEach(t => {
+    counts.all++;
+    counts[bucketFor(t.category)]++;
+  });
+  const buckets = [
+    { id: 'all',         label: 'All'         },
+    { id: 'core',        label: 'Core work'   },
+    { id: 'personal',    label: 'Personal'    },
+    { id: 'distraction', label: 'Distractions'},
+    { id: 'idle',        label: 'Idle / Break'},
+  ];
+  el.innerHTML = buckets.map(b => {
+    const active = b.id === activeBucket ? 'active' : '';
+    const count = counts[b.id] || 0;
+    return `<button class="bucket-pill ${active}" data-bucket="${b.id}" onclick="filterByBucket('${b.id}')">
+      ${escHtml(b.label)}<span class="count">${count}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderDispatch(data) {
+  const el = document.getElementById('dispatch-grid');
+  const focus = computeFocus(data);
+  const cats = (data.categories || []).sort((a,b) => b.seconds - a.seconds);
+  const total = cats.reduce((s,c) => s + c.seconds, 0);
+
+  if (!total) {
+    el.innerHTML = '<div class="dispatch-item"><div class="dispatch-eyebrow">No Data</div><div class="dispatch-value headline">—</div></div>';
+    return;
+  }
+
+  const top = cats[0];
+  const topPct = Math.round(top.seconds / total * 100);
+  const prodPct = Math.round(focus.purposefulSec / total * 100);
+
+  const distractionPct = Math.round(focus.distractionSec / total * 100);
+
+  // Build items
+  const items = [
+    {
+      kind: 'headline',
+      label: 'Headline',
+      value: buildHeadline(data, focus),
+      sub: `${top.category} · ${fmtDur(top.seconds)} (${topPct}%)`,
+      tone: 'var(--ink)',
+    },
+    {
+      kind: 'stat',
+      label: 'Productive Time',
+      value: prodPct + '%',
+      sub: `${fmtDur(focus.purposefulSec)} — ${prodPct >= 60 ? 'strong focus' : 'room for more'}`,
+      tone: prodPct >= 60 ? 'var(--good)' : 'var(--warn)',
+    },
+    {
+      kind: 'stat',
+      label: 'Context Switches',
+      value: String(focus.switches),
+      sub: focus.switches > 25 ? 'high — batch similar work' : focus.switches > 12 ? 'moderate' : 'low — good focus',
+      tone: focus.switches > 25 ? 'var(--flag)' : 'var(--ink)',
+    },
+    {
+      kind: 'stat',
+      label: 'Distraction',
+      value: distractionPct + '%',
+      sub: `${fmtDur(focus.distractionSec)} in Personal / Entertainment / Break`,
+      tone: distractionPct > 20 ? 'var(--flag)' : 'var(--ink-3)',
+    },
+  ];
+
+  el.innerHTML = items.map(it => `
+    <div class="dispatch-item">
+      <div class="dispatch-eyebrow" style="color:${it.tone}">${it.label}</div>
+      <div class="dispatch-value ${it.kind === 'headline' ? 'headline' : ''}" style="color:${it.tone}">${escHtml(it.value)}</div>
+      <div class="dispatch-sub">${escHtml(it.sub)}</div>
+    </div>
+  `).join('');
+}
+
+function buildHeadline(data, focus) {
+  const cats = (data.categories || []).sort((a,b) => b.seconds - a.seconds);
+  if (!cats.length) return 'Nothing yet.';
+  const top = cats[0];
+  const total = cats.reduce((s,c) => s + c.seconds, 0);
+  const topPct = Math.round(top.seconds / total * 100);
+  if (topPct >= 50) return `A ${top.category.toLowerCase()} day.`;
+  if (focus.switches > 25) return 'A scattered day.';
+  if (focus.score && focus.score >= 70) return 'Strong focus.';
+  if ((focus.distractionSec / total) > 0.3) return 'Much distracted.';
+  return 'A mixed day.';
+}
+
+function renderScreenshots(shots) {
+  const el = document.getElementById('screenshots');
+  if (!shots.length) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">— No captures yet.</div>';
+    return;
+  }
+  el.innerHTML = shots.slice(0, 6).map(s => {
+    const time = s.timestamp?.split('T')[1]?.substring(0, 5) || '';
+    return `<figure class="capture">
+      <div class="capture-frame">
+        <img src="/api/screenshots/${s.id}" loading="lazy" onclick="openLightbox(${s.id})" alt="${escAttr(s.app)}">
+      </div>
+      <figcaption class="capture-cap">
+        <span class="time">${time}</span>
+        <span>${escHtml(s.app || '')}</span>
+      </figcaption>
+    </figure>`;
+  }).join('');
+}
+
+function renderHourly(hourlyData, categories) {
+  const ctx = document.getElementById('hourly-chart').getContext('2d');
+  if (hourlyChart) hourlyChart.destroy();
+  const activeHours = (hourlyData || []).filter(h => h.total_seconds > 0);
+  if (!activeHours.length) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    return;
+  }
+  const allCats = new Set();
+  const catColors = {};
+  (categories || []).forEach(c => { catColors[c.category] = c.color; });
+  hourlyData.forEach(h => Object.keys(h.categories || {}).forEach(c => allCats.add(c)));
+
+  const datasets = [...allCats].map(cat => ({
+    label: cat,
+    data: hourlyData.map(h => (h.categories[cat]?.seconds || 0) / 60),
+    backgroundColor: catColors[cat] || '#9C9384',
+    borderWidth: 0,
+    borderRadius: 0,
+  }));
+
+  const ink = getCSS('--ink');
+  const ink3 = getCSS('--ink-3');
+  const rule = getCSS('--rule');
+
+  hourlyChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: hourlyData.map(h => `${h.hour}:00`), datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${Math.round(ctx.parsed.y)}m` },
+          backgroundColor: ink,
+          titleFont: { family: 'JetBrains Mono, monospace', size: 11 },
+          bodyFont: { family: 'Inter, sans-serif', size: 12 },
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: ink3 } },
+        y: { stacked: true, title: { display: true, text: 'Minutes', font: { family: 'Inter', size: 11 }, color: ink3 }, grid: { color: rule }, ticks: { font: { family: 'JetBrains Mono', size: 10 }, color: ink3 } }
+      }
+    }
+  });
+}
+
+function getCSS(v) {
+  return getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+}
+
+function openLightbox(obsId) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  img.src = `/api/screenshots/${obsId}`;
+  lb.classList.add('active');
+}
+
+/* ---------------- UTILS ---------------- */
+
+function fmtDur(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  return h > 0 ? `${h}h ${String(m).padStart(2,'0')}m` : `${m}m`;
+}
+function fmtShort(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h >= 1) return `${h}h ${String(m).padStart(2,'0')}m`;
+  return `${m}m`;
+}
+function escHtml(s) {
+  if (s == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+function escAttr(s) { return escHtml(s).replace(/"/g, '&quot;'); }
+function escJs(s) { return String(s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+
+// Initial load + auto refresh
+loadDashboard();
+setInterval(loadDashboard, 60000);
+</script>
+</body>
+</html>

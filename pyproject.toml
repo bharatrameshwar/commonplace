@@ -1,0 +1,28 @@
+[project]
+name = "commonplace"
+version = "0.1.0"
+description = "Local-first macOS activity tracker with AI-powered classification, a daily commonplace book, and an MCP server for Claude."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Bharat Rameshwar" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "pyyaml>=6.0",
+    "flask>=3.0",
+    "trafilatura>=2.0",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/bharatrameshwar/commonplace"
+Repository = "https://github.com/bharatrameshwar/commonplace"
+Issues = "https://github.com/bharatrameshwar/commonplace/issues"

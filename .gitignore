@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+screenshots/
+*.log
+config.yaml
+.idea/
+.vscode/
+*.egg-info/
+build/
+dist/

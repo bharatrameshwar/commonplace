@@ -1,0 +1,99 @@
+# Commonplace — example config.
+# Copy this file to `config.yaml` and edit. `config.yaml` is gitignored.
+
+# Who you are. Used to (a) personalise AI prompts, (b) skip your own name
+# from people-detection, (c) filter your name out of email subject lists.
+user_profile:
+  # Your name as it appears in window titles, email subjects, Teams chats.
+  name: "Your Name"
+
+  # Every form of your name you've seen in window titles. Lowercase.
+  # Used to skip your own name from people-detection and email subjects.
+  self_aliases:
+    - "your name"
+    - "lastname, firstname"
+
+  # One sentence describing your role. Used in classifier prompts so
+  # categories stay grounded in your actual work.
+  role: "Software engineer"
+
+  # Your organisation (optional). Used as context in prompts.
+  organization: ""
+
+  # Words that look like names but aren't, in your specific work context.
+  # Product names, client names, internal project codes — anything you've
+  # seen the people-extractor mistake for a person.
+  person_stopwords: []
+  # Example:
+  #   - "Acme"
+  #   - "Project Phoenix"
+
+  # Regex patterns for ticket/case IDs you want extracted from descriptions.
+  ticket_patterns: []
+  # Example:
+  #   - pattern: "[A-Z]+-\\d{3,}"
+  #     label: "Jira ticket"
+
+# Local AI (Ollama) used for classification, memory enrichment, and
+# per-person weekly summaries.
+ai:
+  ollama_url: "http://localhost:11434"
+  model: "qwen3:8b"
+
+# Capture daemon settings.
+capture:
+  interval_seconds: 5
+  idle_threshold_seconds: 120
+
+# Which apps' URLs/tabs to capture.
+browsers:
+  - Google Chrome
+  - Safari
+  - Arc
+  - Microsoft Edge
+
+# Apps treated as "in a call" — used to detect meetings.
+call_apps:
+  - zoom.us
+  - Microsoft Teams
+  - FaceTime
+  - Webex
+  - Cisco Webex Meetings
+
+# Database location.
+database:
+  path: ~/.local/share/commonplace/activity.db
+
+# Categories shown on the dashboard. `productive: true` counts toward
+# productive time, `false` counts as distraction, `null` is neutral.
+categories:
+  - name: Meetings/Calls
+    color: "#e74c3c"
+    productive: true
+  - name: Email
+    color: "#e67e22"
+    productive: true
+  - name: Slides/Presentations
+    color: "#f1c40f"
+    productive: true
+  - name: Code/Development
+    color: "#2ecc71"
+    productive: true
+  - name: Documents
+    color: "#3498db"
+    productive: true
+  - name: Communication
+    color: "#9b59b6"
+    productive: null
+  - name: Browsing/Research
+    color: "#1abc9c"
+    productive: null
+  - name: Personal
+    color: "#95a5a6"
+    productive: false
+  - name: Idle/AFK
+    color: "#bdc3c7"
+    productive: null
+  - name: System/Other
+    color: "#7f8c8d"
+    productive: null

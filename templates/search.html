@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory — The Commonplace Book</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #F6F1E7;
+      --paper-2: #EFE8D9;
+      --paper-3: #E6DDC9;
+      --ink: #1A1814;
+      --ink-2: #3A342A;
+      --ink-3: #6E6658;
+      --ink-4: #9C9384;
+      --rule: #D9CFB8;
+      --rule-2: #C9BD9F;
+      --accent: #C4522B;
+      --accent-ink: #8A3617;
+      --flag: #B8231A;
+      --good: #3F7A4A;
+      --warn: #C08A1E;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #1A1814; --paper-2: #221f1a; --paper-3: #2b2720;
+        --ink: #F6F1E7; --ink-2: #E6DDC9; --ink-3: #9C9384; --ink-4: #6E6658;
+        --rule: #3A342A; --rule-2: #4a4336;
+        --accent: #D96A3F; --accent-ink: #E48660;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: var(--paper); color: var(--ink); }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-size: 13px; line-height: 1.45;
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      display: flex; min-height: 100vh;
+    }
+    .serif { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+    .mono  { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .eyebrow {
+      font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);
+    }
+    a { color: inherit; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--rule-2); border-radius: 10px; border: 2px solid var(--paper); }
+    ::-webkit-scrollbar-track { background: transparent; }
+
+    /* Rail */
+    .rail {
+      width: 56px; height: 100vh; position: sticky; top: 0;
+      border-right: 1px solid var(--ink); background: var(--paper);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 20px 0; gap: 4px; flex-shrink: 0; z-index: 10;
+    }
+    .rail-logo {
+      width: 32px; height: 32px; border: 1.5px solid var(--ink);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Instrument Serif', serif; font-size: 20px;
+      margin-bottom: 24px; color: var(--ink); text-decoration: none;
+    }
+    .rail a {
+      width: 36px; height: 36px; border: none; background: transparent;
+      color: var(--ink-2); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Instrument Serif', serif; text-decoration: none;
+      transition: background 0.1s, color 0.1s;
+    }
+    .rail a:hover { background: var(--paper-2); color: var(--ink); }
+    .rail a.active { background: var(--ink); color: var(--paper); }
+    .rail-spacer { flex: 1; }
+    .rail-caption {
+      writing-mode: vertical-rl; transform: rotate(180deg);
+      font-family: 'JetBrains Mono', monospace; font-size: 9px;
+      color: var(--ink-3); letter-spacing: 0.3em; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .main {
+      flex: 1; padding: 0 48px 48px;
+      max-width: 1400px; margin: 0 auto; width: 100%;
+    }
+
+    /* Masthead */
+    .masthead {
+      border-bottom: 2px solid var(--ink);
+      padding: 22px 0 16px; margin-bottom: 24px;
+    }
+    .masthead-meta {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--ink-3); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 8px; flex-wrap: wrap; gap: 10px;
+    }
+    .masthead-row {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 24px; flex-wrap: wrap;
+    }
+    .masthead-row h1 {
+      font-family: 'Instrument Serif', serif; font-weight: 400;
+      margin: 0; font-size: 52px; line-height: 1;
+      letter-spacing: -0.02em; font-style: italic;
+      color: var(--ink); white-space: nowrap;
+    }
+    .masthead-kbd {
+      padding-bottom: 8px; font-size: 11px; color: var(--ink-3);
+    }
+    .masthead-subtitle {
+      margin-top: 28px; font-family: 'Instrument Serif', serif;
+      font-size: 15px; font-style: italic; color: var(--ink-2);
+    }
+    kbd {
+      display: inline-block; padding: 1px 6px; margin: 0 2px;
+      border: 1px solid var(--ink); border-bottom-width: 2px;
+      background: var(--paper-2); font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink);
+    }
+
+    /* Search */
+    .search-section { margin-bottom: 32px; }
+    .search-bar {
+      display: flex; align-items: stretch; gap: 0;
+      border: 1.5px solid var(--ink);
+    }
+    .search-label {
+      padding: 14px 16px; background: var(--ink); color: var(--paper);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      display: flex; align-items: center;
+    }
+    .search-input {
+      flex: 1; border: none; outline: none;
+      padding: 14px 18px;
+      background: var(--paper); color: var(--ink);
+      font-family: 'Instrument Serif', serif;
+      font-size: 22px; letter-spacing: -0.005em;
+    }
+    .search-hint {
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--ink-3); letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 8px;
+      border-left: 1px solid var(--rule);
+    }
+    .filter-chips {
+      display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;
+    }
+    .filter-chip {
+      font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+      letter-spacing: 0.04em; padding: 5px 10px;
+      background: transparent; color: var(--ink-2);
+      border: 1px solid var(--ink); cursor: pointer;
+    }
+    .filter-chip.active {
+      background: var(--ink); color: var(--paper);
+    }
+
+    /* Section head */
+    .mem-section-head {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      gap: 16px; margin-bottom: 16px; padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--ink); flex-wrap: wrap;
+    }
+    .mem-section-head .eyebrow { margin-bottom: 4px; }
+    .mem-section-head-title-row {
+      display: flex; align-items: baseline; gap: 10px;
+    }
+    .mem-section-head-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 26px; line-height: 1; white-space: nowrap;
+    }
+    .mem-section-head-count {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-3);
+    }
+    .mem-section-head-right {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--ink-3); text-align: right;
+    }
+
+    /* Pinned strip */
+    .pinned-section { margin-bottom: 40px; }
+    .pinned-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      border: 1px solid var(--ink);
+      background: var(--paper-2);
+    }
+    .pinned-card {
+      padding: 18px 18px 16px;
+      border-right: 1px solid var(--rule-2);
+      position: relative;
+      min-height: 120px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .pinned-card:last-child { border-right: none; }
+    .pinned-card-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .pinned-card-eyebrow {
+      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+    .pinned-card-star {
+      font-size: 11px; color: var(--accent);
+      transform: rotate(-20deg); display: inline-block;
+    }
+    .pinned-card-title {
+      font-size: 20px; line-height: 1.15;
+      color: var(--ink); letter-spacing: -0.005em;
+    }
+    .pinned-card-title.serif {
+      font-family: 'Instrument Serif', serif;
+    }
+    .pinned-card-title.mono {
+      font-family: 'JetBrains Mono', monospace; font-size: 16px;
+      letter-spacing: -0.01em;
+    }
+    .pinned-card-meta {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--ink-3); letter-spacing: 0.04em; margin-top: 12px;
+    }
+
+    /* 2-col wrapper */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+      margin-bottom: 40px;
+    }
+
+    /* People rolodex */
+    .people-row {
+      display: grid; grid-template-columns: 30px 1fr auto; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--rule);
+      align-items: center;
+      transition: background 0.15s;
+    }
+    .people-row.clickable { cursor: pointer; }
+    .people-row.clickable:hover { background: rgba(0,0,0,0.025); }
+
+    /* Person detail panel — manuscript style */
+    .person-panel-overlay {
+      position: fixed; inset: 0; background: rgba(20,15,8,0.25);
+      z-index: 199; display: none;
+    }
+    .person-panel-overlay.active { display: block; }
+    .person-panel {
+      position: fixed; top: 0; right: 0; height: 100vh; width: 480px;
+      max-width: 92vw; background: var(--paper);
+      border-left: 1px solid var(--rule); padding: 32px 36px;
+      overflow-y: auto; z-index: 200;
+      transform: translateX(100%); transition: transform 0.22s ease;
+      box-shadow: -4px 0 30px rgba(0,0,0,0.08);
+    }
+    .person-panel.active { transform: translateX(0); }
+    .person-panel-close {
+      position: absolute; top: 18px; right: 22px;
+      background: none; border: none; font-size: 22px;
+      color: var(--ink-3); cursor: pointer; line-height: 1;
+    }
+    .person-panel-close:hover { color: var(--ink); }
+    .person-panel-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 6px;
+    }
+    .person-panel-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px; line-height: 1.05; color: var(--ink);
+      letter-spacing: -0.01em; margin-bottom: 6px;
+    }
+    .person-panel-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px; color: var(--ink-3);
+      letter-spacing: 0.04em; margin-bottom: 24px;
+    }
+    .person-panel-section-head {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink-3); margin: 22px 0 10px;
+      padding-bottom: 4px; border-bottom: 1px solid var(--rule);
+    }
+    .person-panel-summary {
+      font-family: 'Instrument Serif', serif;
+      font-size: 17px; line-height: 1.55; color: var(--ink);
+      font-style: italic; padding: 4px 0 8px;
+    }
+    .person-panel-summary.empty {
+      font-style: italic; color: var(--ink-3); font-size: 14px;
+    }
+    .person-panel-summary-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px; color: var(--ink-3);
+      letter-spacing: 0.06em; margin-top: 8px;
+    }
+    .person-activity-item {
+      padding: 10px 0; border-bottom: 1px solid var(--rule);
+    }
+    .person-activity-item:last-child { border-bottom: none; }
+    .person-activity-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink-3);
+      letter-spacing: 0.04em; margin-bottom: 3px;
+    }
+    .person-activity-context {
+      font-size: 13px; color: var(--ink); line-height: 1.45;
+    }
+    .person-activity-badge {
+      display: inline-block; font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 1px 6px; border-radius: 3px; margin-left: 6px;
+      background: var(--ink); color: var(--paper);
+    }
+    .person-panel-loading, .person-panel-empty {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--ink-3);
+      letter-spacing: 0.04em; padding: 12px 0;
+    }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 999px;
+      color: var(--paper);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+      font-family: 'Inter', sans-serif; flex-shrink: 0;
+    }
+    .people-info {
+      min-width: 0;
+    }
+    .people-name-row {
+      display: flex; align-items: baseline; gap: 8px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .people-name {
+      font-family: 'Instrument Serif', serif;
+      font-size: 17px; color: var(--ink); letter-spacing: -0.005em;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .people-role {
+      font-size: 10.5px; color: var(--ink-3);
+      letter-spacing: 0.04em; flex-shrink: 0;
+    }
+    .people-last {
+      font-size: 11px; color: var(--ink-3); margin-top: 2px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .people-meta { text-align: right; white-space: nowrap; }
+    .people-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink);
+    }
+    .people-thread {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--ink-3);
+      margin-top: 2px; letter-spacing: 0.06em;
+    }
+
+    /* Docs */
+    .doc-row {
+      display: grid; grid-template-columns: 44px 1fr auto; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--rule);
+      align-items: center;
+    }
+    .doc-row.clickable { cursor: pointer; transition: background 0.1s; }
+    .doc-row.clickable:hover {
+      background: rgba(196, 82, 43, 0.06);
+    }
+    .doc-row.clickable:hover .doc-title {
+      text-decoration: underline; text-decoration-color: var(--rule-2); text-underline-offset: 3px;
+    }
+    .doc-glyph {
+      display: inline-block; font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 600;
+      padding: 2px 4px; border: 1px solid var(--ink-3);
+      color: var(--ink-2); letter-spacing: 0.08em;
+      text-align: center; white-space: nowrap;
+    }
+    .doc-info { min-width: 0; }
+    .doc-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 15.5px; color: var(--ink); letter-spacing: -0.005em;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .doc-where {
+      font-size: 10.5px; color: var(--ink-3);
+      margin-top: 1px; letter-spacing: 0.02em;
+    }
+    .doc-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink-2); white-space: nowrap;
+    }
+
+    /* Numbers grid */
+    .numbers-section { margin-bottom: 40px; }
+    .numbers-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    }
+    .number-card {
+      border: 1px solid var(--ink);
+      background: var(--paper-2);
+      padding: 12px 14px;
+      position: relative;
+      min-height: 110px;
+    }
+    .number-card.clickable { cursor: pointer; transition: background 0.1s; }
+    .number-card.clickable:hover { background: var(--paper-3); }
+    .number-card-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .number-card-label {
+      font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);
+    }
+    .number-card-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px; font-weight: 600; color: var(--ink);
+      margin-top: 6px; letter-spacing: -0.01em;
+      word-break: break-all;
+    }
+    .number-card-context {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic; font-size: 13px; color: var(--ink-3);
+      margin-top: 6px; padding-right: 40px; line-height: 1.3;
+    }
+    .number-card-time {
+      position: absolute; right: 10px; bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--ink-3);
+    }
+
+    /* Links list */
+    .link-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid var(--rule);
+      align-items: baseline;
+    }
+    .link-row a {
+      text-decoration: none;
+    }
+    .link-info { min-width: 0; }
+    .link-row-line {
+      display: flex; align-items: baseline; gap: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .link-label {
+      font-family: 'Instrument Serif', serif;
+      font-size: 15px; color: var(--ink); letter-spacing: -0.005em;
+      text-decoration: underline; text-decoration-color: var(--rule-2);
+      text-underline-offset: 3px;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .link-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink-3); margin-top: 3px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .link-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--ink-2);
+    }
+
+    /* Snippet list */
+    .snippet-row {
+      padding: 14px 0; border-bottom: 1px solid var(--rule);
+      display: grid; grid-template-columns: 24px 1fr; gap: 10px;
+    }
+    .snippet-quote {
+      font-family: 'Instrument Serif', serif;
+      font-size: 34px; line-height: 0.7;
+      color: var(--accent); font-style: italic;
+    }
+    .snippet-text {
+      font-family: 'Instrument Serif', serif;
+      font-size: 16px; line-height: 1.4; color: var(--ink);
+      letter-spacing: -0.005em; margin: 0;
+    }
+    .snippet-meta {
+      margin-top: 8px;
+      display: flex; gap: 10px; align-items: baseline;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--ink-3); letter-spacing: 0.04em;
+    }
+    .snippet-meta .source { color: var(--ink-2); }
+
+    /* Colophon */
+    .colophon {
+      border-top: 2px solid var(--ink); padding-top: 14px;
+      display: flex; justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--ink-3); letter-spacing: 0.12em; text-transform: uppercase;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .colophon a { color: var(--ink); text-decoration: none; }
+
+    /* Empty states */
+    .empty-state {
+      padding: 30px 20px; text-align: center;
+      color: var(--ink-3); font-family: 'Instrument Serif', serif;
+      font-style: italic; font-size: 15px;
+    }
+
+    /* Refresh bar */
+    .refresh-bar {
+      position: fixed; top: 0; left: 0;
+      height: 2px; background: var(--accent);
+      width: 0; transition: width 0.3s; z-index: 2000;
+    }
+    .refresh-bar.loading { width: 100%; }
+
+    /* Date switcher */
+    .date-nav {
+      display: flex; gap: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    }
+    .date-nav button, .date-nav input {
+      padding: 5px 10px;
+      background: var(--paper); color: var(--ink);
+      border: 1px solid var(--ink); cursor: pointer;
+      font: inherit;
+    }
+    .date-nav button.today {
+      background: var(--ink); color: var(--paper);
+    }
+
+    @media (max-width: 1100px) {
+      .pinned-grid { grid-template-columns: repeat(2, 1fr); }
+      .pinned-card:nth-child(2) { border-right: none; }
+      .pinned-card:nth-child(1),
+      .pinned-card:nth-child(2) {
+        border-bottom: 1px solid var(--rule-2);
+      }
+      .numbers-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .main { padding: 0 20px 40px; }
+      .masthead-row h1 { font-size: 36px; white-space: normal; }
+      .two-col { grid-template-columns: 1fr; gap: 32px; }
+      .pinned-grid { grid-template-columns: 1fr; }
+      .pinned-card { border-right: none; border-bottom: 1px solid var(--rule-2); }
+      .pinned-card:last-child { border-bottom: none; }
+      .numbers-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="rail">
+    <a href="/" class="rail-logo" title="Activity">A</a>
+    <a href="/" title="Dashboard">▦</a>
+    <a href="/reports" title="Reports">≡</a>
+    <a href="/search" class="active" title="Memory">✦</a>
+    <div class="rail-spacer"></div>
+    <div class="rail-caption">Activity Monitor</div>
+  </nav>
+
+  <div class="refresh-bar" id="refresh-bar"></div>
+
+  <main class="main">
+    <!-- Masthead -->
+    <header class="masthead">
+      <div class="masthead-meta">
+        <span>Vol. I — The Memory</span>
+        <span>A notebook of people, things & numbers</span>
+        <span id="updated-ago">Updated just now</span>
+      </div>
+      <div class="masthead-row">
+        <h1>The Commonplace Book.</h1>
+        <div class="date-nav">
+          <button onclick="changeDate(-1)">←</button>
+          <input type="date" id="date-picker" onchange="loadMemory()">
+          <button onclick="changeDate(1)">→</button>
+          <button class="today" onclick="goToday()">Today</button>
+        </div>
+      </div>
+      <div class="masthead-kbd">
+        Press <kbd>/</kbd> to search &nbsp;·&nbsp;
+        <kbd>Esc</kbd> to clear &nbsp;·&nbsp;
+        Showing <span id="date-display" class="mono" style="color:var(--ink);">—</span>
+        <span id="window-label" style="margin-left:6px;color:var(--ink-3);">· last 10 days</span>
+      </div>
+      <div class="masthead-subtitle">
+        — Everything worth remembering. Names, documents, URLs, numbers, and half-formed ideas, kept close at hand.
+      </div>
+    </header>
+
+    <!-- Search -->
+    <section class="search-section">
+      <div class="search-bar">
+        <span class="search-label">Recall</span>
+        <input type="text" id="search-input" class="search-input"
+          placeholder="Search people, documents, links, numbers, notes…"
+          autocomplete="off" spellcheck="false">
+        <span class="search-hint"><kbd>/</kbd></span>
+      </div>
+      <div class="filter-chips" id="filter-chips">
+        <button class="filter-chip active" data-filter="all">Everything</button>
+        <button class="filter-chip" data-filter="people">People</button>
+        <button class="filter-chip" data-filter="docs">Documents</button>
+        <button class="filter-chip" data-filter="links">Links</button>
+        <button class="filter-chip" data-filter="numbers">Numbers</button>
+        <button class="filter-chip" data-filter="snippets">Snippets</button>
+      </div>
+    </section>
+
+    <!-- Pinned — Don't Forget strip -->
+    <section class="pinned-section">
+      <div class="mem-section-head">
+        <div>
+          <div class="eyebrow">Don't Forget</div>
+          <div class="mem-section-head-title-row">
+            <div class="mem-section-head-title">Pinned to the Top</div>
+            <div class="mem-section-head-count" id="pinned-count">00</div>
+          </div>
+        </div>
+        <div class="mem-section-head-right">Auto-surfaced, highest score</div>
+      </div>
+      <div class="pinned-grid" id="pinned-grid"></div>
+    </section>
+
+    <!-- People + Documents -->
+    <section class="two-col">
+      <div>
+        <div class="mem-section-head">
+          <div>
+            <div class="eyebrow">The Rolodex</div>
+            <div class="mem-section-head-title-row">
+              <div class="mem-section-head-title">People</div>
+              <div class="mem-section-head-count" id="people-count">00</div>
+            </div>
+          </div>
+          <div class="mem-section-head-right">Chatted with today</div>
+        </div>
+        <div id="people-list"></div>
+      </div>
+      <div>
+        <div class="mem-section-head">
+          <div>
+            <div class="eyebrow">The Desk</div>
+            <div class="mem-section-head-title-row">
+              <div class="mem-section-head-title">Documents</div>
+              <div class="mem-section-head-count" id="docs-count">00</div>
+            </div>
+          </div>
+          <div class="mem-section-head-right">Opened or referenced</div>
+        </div>
+        <div id="docs-list"></div>
+      </div>
+    </section>
+
+    <!-- Numbers & Codes -->
+    <section class="numbers-section">
+      <div class="mem-section-head">
+        <div>
+          <div class="eyebrow">Worth Keeping</div>
+          <div class="mem-section-head-title-row">
+            <div class="mem-section-head-title">Numbers &amp; Codes</div>
+            <div class="mem-section-head-count" id="numbers-count">00</div>
+          </div>
+        </div>
+        <div class="mem-section-head-right">Tickets, cases, IDs</div>
+      </div>
+      <div class="numbers-grid" id="numbers-grid"></div>
+    </section>
+
+    <!-- Links + Snippets -->
+    <section class="two-col">
+      <div>
+        <div class="mem-section-head">
+          <div>
+            <div class="eyebrow">Trail of Tabs</div>
+            <div class="mem-section-head-title-row">
+              <div class="mem-section-head-title">Links Followed</div>
+              <div class="mem-section-head-count" id="links-count">00</div>
+            </div>
+          </div>
+        </div>
+        <div id="links-list"></div>
+      </div>
+      <div>
+        <div class="mem-section-head">
+          <div>
+            <div class="eyebrow">Marginalia</div>
+            <div class="mem-section-head-title-row">
+              <div class="mem-section-head-title">Lines Worth Saving</div>
+              <div class="mem-section-head-count" id="snippets-count">00</div>
+            </div>
+          </div>
+        </div>
+        <div id="snippets-list"></div>
+      </div>
+    </section>
+
+    <footer class="colophon">
+      <span><a href="/">← Back to the Day</a></span>
+      <span>The Memory · Vol. I</span>
+      <span><a href="/reports">Weekly Trends →</a></span>
+    </footer>
+  </main>
+
+<script>
+let currentDate = new Date().toLocaleDateString('en-CA');
+let currentQuery = '';
+let currentFilter = 'all';
+let memoryData = null;
+
+const searchInput = document.getElementById('search-input');
+const datePicker = document.getElementById('date-picker');
+datePicker.value = currentDate;
+
+function changeDate(delta) {
+  const d = new Date(currentDate);
+  d.setDate(d.getDate() + delta);
+  currentDate = d.toISOString().split('T')[0];
+  datePicker.value = currentDate;
+  loadMemory();
+}
+function goToday() {
+  currentDate = new Date().toLocaleDateString('en-CA');
+  datePicker.value = currentDate;
+  loadMemory();
+}
+
+// Keyboard: / focuses search, Esc clears it
+window.addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+    searchInput.value = '';
+    currentQuery = '';
+    renderAll();
+  }
+});
+let searchTimer = null;
+searchInput.addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentQuery = e.target.value.trim().toLowerCase();
+    renderAll();
+  }, 150);
+});
+
+// Filter chips
+document.querySelectorAll('.filter-chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderAll();
+  });
+});
+
+async function loadMemory() {
+  currentDate = datePicker.value;
+  const bar = document.getElementById('refresh-bar');
+  bar.classList.add('loading');
+  try {
+    const data = await fetch(`/api/memory_window?end=${currentDate}&days=10`).then(r => r.json());
+    memoryData = data;
+    document.getElementById('date-display').textContent = formatDateDisplay(currentDate);
+    if (data.window_start && data.window_days) {
+      const startStr = formatShort(data.window_start);
+      document.getElementById('window-label').textContent = `· ${startStr} → ${formatShort(currentDate)}`;
+    }
+    document.getElementById('updated-ago').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    renderAll();
+  } catch (e) {
+    console.error('Failed to load memory:', e);
+  } finally {
+    bar.classList.remove('loading');
+  }
+}
+
+function renderAll() {
+  if (!memoryData) return;
+  const q = currentQuery;
+  const f = currentFilter;
+  const visible = (section) => f === 'all' || f === section;
+
+  // Merge: LLM-enriched memory_items get priority; regex-derived fills gaps
+  const llm = classifyMemoryItems(memoryData.memory_items || []);
+
+  const regexPeople = derivePeople(memoryData);
+  const regexDocs = deriveDocs(memoryData);
+  const regexNumbers = deriveNumbers(memoryData);
+  const regexLinks = deriveLinks(memoryData);
+  const regexSnippets = deriveSnippets(memoryData);
+
+  const people = mergeByKey([...llm.people, ...regexPeople], p => (p.name || '').toLowerCase());
+  const docs = mergeByKey([...llm.docs, ...regexDocs], d => (d.title || '').toLowerCase());
+  const numbers = mergeByKey([...llm.numbers, ...regexNumbers], n => (n.value || '').toLowerCase());
+  const links = mergeByKey([...llm.links, ...regexLinks], l => (l.url || l.label || '').toLowerCase());
+  const snippets = mergeByKey([...llm.snippets, ...regexSnippets], s => (s.text || '').toLowerCase().slice(0, 80));
+
+  // Apply query
+  const qMatch = (s) => !q || (s || '').toLowerCase().includes(q);
+  const pFil = people.filter(p => qMatch(p.name) || qMatch(p.role) || qMatch(p.last));
+  const dFil = docs.filter(d => qMatch(d.title) || qMatch(d.where));
+  const nFil = numbers.filter(n => qMatch(n.value) || qMatch(n.context) || qMatch(n.label));
+  const lFil = links.filter(l => qMatch(l.label) || qMatch(l.url));
+  const sFil = snippets.filter(s => qMatch(s.text) || qMatch(s.source));
+
+  // Pinned = top-scored across everything (highlights + numbers + top people)
+  const pinned = derivePinned(memoryData, people, docs, numbers, links);
+  renderPinned(pinned.filter(p => qMatch(p.title) || qMatch(p.meta)));
+
+  renderPeople(visible('people') ? pFil : []);
+  renderDocs(visible('docs') ? dFil : []);
+  renderNumbers(visible('numbers') ? nFil : []);
+  renderLinks(visible('links') ? lFil : []);
+  renderSnippets(visible('snippets') ? sFil : []);
+
+  document.getElementById('people-count').textContent = pad(pFil.length);
+  document.getElementById('docs-count').textContent = pad(dFil.length);
+  document.getElementById('numbers-count').textContent = pad(nFil.length);
+  document.getElementById('links-count').textContent = pad(lFil.length);
+  document.getElementById('snippets-count').textContent = pad(sFil.length);
+  document.getElementById('pinned-count').textContent = pad(pinned.length);
+}
+
+/* ----- LLM-enriched items from memory_items table ----- */
+
+function classifyMemoryItems(items) {
+  // Bucket memory_items by kind into the shapes our renderers expect
+  const out = { people: [], docs: [], numbers: [], links: [], snippets: [] };
+  for (const m of items || []) {
+    const base = {
+      sourceDate: m.span_date || m._date || '',
+      time: m.time || '',
+      context: m.context || '',
+      score: m.score || 5,
+      url: m.url || '',
+      _llm: true,
+    };
+    switch (m.kind) {
+      case 'person':
+        out.people.push({
+          id: m.person_id || null,
+          name: m.value,
+          role: m.label || 'Today',
+          last: m.context || '',
+          hue: hueFromName(m.value),
+          weekly_summary: m.weekly_summary || null,
+          ...base,
+        });
+        break;
+      case 'doc':
+        out.docs.push({
+          title: m.value,
+          where: m.label || m.span_app || 'Document',
+          kind: docKindFromName(m.value),
+          ...base,
+        });
+        break;
+      case 'ticket':
+        out.numbers.push({
+          value: m.value,
+          label: m.label || labelForTicket(m.value),
+          context: m.context || '',
+          ...base,
+        });
+        break;
+      case 'link':
+        // Only keep LLM links that actually carry a URL — otherwise they're useless
+        if (m.url && /^https?:\/\//i.test(m.url)) {
+          out.links.push({
+            label: m.value,
+            dwell: 0,
+            ...base,
+          });
+        }
+        break;
+      case 'snippet':
+      case 'pinned':
+        out.snippets.push({
+          text: m.context || m.value,
+          source: m.label || m.span_app || '',
+          ...base,
+        });
+        break;
+    }
+  }
+  // Sort each by score desc
+  for (const k of Object.keys(out)) {
+    out[k].sort((a, b) => (b.score || 0) - (a.score || 0));
+  }
+  return out;
+}
+
+function mergeByKey(items, keyFn) {
+  const seen = new Set();
+  const out = [];
+  for (const it of items) {
+    const k = keyFn(it);
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    out.push(it);
+  }
+  return out;
+}
+
+/* ----- Derivers: shape backend data into design-friendly objects ----- */
+
+function derivePeople(data) {
+  const people = (data.people || []).slice();
+  // Also fold in person-type highlights that aren't already in the list
+  const byName = new Set(people.map(p => p.name));
+  for (const h of (data.highlights || [])) {
+    if (h.type === 'person' && !byName.has(h.title)) {
+      people.push({
+        name: h.title,
+        context: h.subtitle || '',
+        time: h.time || '',
+        type: 'highlight',
+      });
+      byName.add(h.title);
+    }
+  }
+  return people.map(p => ({
+    id: p.id || null,
+    name: p.name,
+    role: p.type === 'teams_chat' ? 'Teams chat' :
+          p.type === 'outlook_email' ? 'Email' :
+          p.type === 'highlight' ? 'Highlight' : (p.type || ''),
+    last: p.context || '',
+    time: p.time || '',
+    sourceDate: p._date || '',
+    thread: 1,
+    hue: hueFromName(p.name),
+    weekly_summary: p.weekly_summary || null,
+  }));
+}
+
+function deriveDocs(data) {
+  return (data.documents || []).map(d => ({
+    title: d.name || 'Untitled',
+    where: `${d.app || '—'} · ${d.category || ''}`,
+    time: d.first_time || '',
+    sourceDate: d._date || '',
+    kind: docKindFromName(d.name),
+    seconds: d.total_seconds || 0,
+    url: d.url || d.browser_url || '',
+  }));
+}
+
+function deriveNumbers(data) {
+  const tickets = data.tickets || [];
+  return tickets.map(t => ({
+    value: t.id || t.label,
+    label: labelForTicket(t.id || t.label),
+    context: t.description || t.context || t.latest_context || '',
+    time: t.time || t.first_time || '',
+    sourceDate: t._date || '',
+    url: t.url || '',
+  }));
+}
+
+function deriveLinks(data) {
+  const out = [];
+  const seen = new Set();
+  const addOnce = (item) => {
+    const key = (item.url || item.label || '').toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(item);
+  };
+  for (const r of (data.deep_reads || [])) {
+    if (r.url) addOnce({
+      label: r.title || r.name || r.url,
+      url: r.url,
+      time: r.time || '',
+      dwell: r.dwell_minutes || 0,
+      sourceDate: r._date || '',
+    });
+  }
+  for (const c of (data.chat_links || [])) {
+    addOnce({
+      label: c.title || c.label || c.url,
+      url: c.url,
+      time: c.time || '',
+      sourceDate: c._date || '',
+    });
+  }
+  for (const q of (data.search_queries || [])) {
+    addOnce({
+      label: 'Search: ' + (q.query || q.label || ''),
+      url: q.url || '',
+      time: q.time || '',
+      sourceDate: q._date || '',
+    });
+  }
+  return out.sort((a, b) => (b.dwell || 0) - (a.dwell || 0));
+}
+
+function deriveSnippets(data) {
+  const out = [];
+  for (const r of (data.deep_reads || [])) {
+    const text = r.excerpt || r.content_preview || r.description || r.summary || r.title;
+    if (text && text.length > 20) {
+      out.push({
+        text: text.length > 240 ? text.slice(0, 240).trim() + '…' : text,
+        source: r.app || r.source || r.site || 'Web',
+        time: r.time || '',
+        sourceDate: r._date || '',
+        url: r.url || '',
+      });
+    }
+  }
+  for (const h of (data.highlights || [])) {
+    if (h.type === 'doc' || h.type === 'note') {
+      const text = h.subtitle || h.title;
+      if (text && text.length > 20) {
+        out.push({
+          text, source: h.title, time: h.time || '',
+          sourceDate: h._date || '',
+        });
+      }
+    }
+  }
+  return out;
+}
+
+function derivePinned(data, people, docs, numbers, links) {
+  // Pick up to 4 "don't forget" items — mix of types.
+  const out = [];
+  // First: numbers (tickets get priority)
+  if (numbers.length) {
+    const n = numbers[0];
+    out.push({ kind: 'number', eyebrow: 'Ticket / Case', title: n.value, meta: truncate(n.context, 60) + ' · ' + (n.time || ''), mono: true, accent: 'var(--accent)' });
+  }
+  // Second: top person
+  if (people.length) {
+    const p = people[0];
+    out.push({ kind: 'person', eyebrow: 'Person', title: p.name, meta: (p.role ? p.role + ' · ' : '') + (p.time || ''), accent: `hsl(${p.hue} 45% 45%)` });
+  }
+  // Third: top document
+  if (docs.length) {
+    const d = docs[0];
+    out.push({ kind: 'doc', eyebrow: 'Document', title: truncate(d.title, 60), meta: d.where + (d.time ? ' · ' + d.time : ''), accent: 'var(--ink)' });
+  }
+  // Fourth: top link or snippet
+  if (links.length) {
+    const l = links[0];
+    out.push({ kind: 'link', eyebrow: 'Link', title: truncate(l.label, 60), meta: hostFromUrl(l.url) + (l.time ? ' · ' + l.time : ''), accent: 'var(--good)' });
+  }
+  return out.slice(0, 4);
+}
+
+/* ----- Renderers ----- */
+
+function renderPinned(items) {
+  const el = document.getElementById('pinned-grid');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">— Nothing pinned yet.</div>';
+    return;
+  }
+  // Pad to 4 cells
+  const padded = items.slice(0, 4);
+  while (padded.length < 4) padded.push(null);
+  el.innerHTML = padded.map(it => {
+    if (!it) return `<div class="pinned-card"></div>`;
+    const titleClass = it.mono ? 'mono' : 'serif';
+    return `<div class="pinned-card">
+      <div>
+        <div class="pinned-card-top">
+          <div class="pinned-card-eyebrow" style="color:${it.accent}">${escHtml(it.eyebrow)}</div>
+          <span class="pinned-card-star">✦</span>
+        </div>
+        <div class="pinned-card-title ${titleClass}">${escHtml(it.title)}</div>
+      </div>
+      <div class="pinned-card-meta">${escHtml(it.meta)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPeople(items) {
+  const el = document.getElementById('people-list');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state">— No people surfaced.</div>';
+    return;
+  }
+  el.innerHTML = items.slice(0, 12).map(p => {
+    const whenLabel = p.sourceDate ? formatShort(p.sourceDate) : 'Today';
+    const clickable = p.id ? 'clickable' : '';
+    const onClick = p.id ? `onclick="openPersonPanel(${p.id}, '${(p.name || '').replace(/'/g, "&#39;")}')"` : '';
+    return `
+    <div class="people-row ${clickable}" ${onClick}>
+      <span class="avatar" style="background:hsl(${p.hue} 45% 45%);">${escHtml(initials(p.name))}</span>
+      <div class="people-info">
+        <div class="people-name-row">
+          <span class="people-name">${escHtml(p.name)}</span>
+          ${p.role ? `<span class="people-role">· ${escHtml(p.role)}</span>` : ''}
+        </div>
+        ${p.last ? `<div class="people-last">${escHtml(p.last)}</div>` : ''}
+      </div>
+      <div class="people-meta">
+        <div class="people-time">${escHtml(p.time || '—')}</div>
+        <div class="people-thread">${escHtml(whenLabel)}</div>
+      </div>
+    </div>
+  `;}).join('');
+}
+
+function renderDocs(items) {
+  const el = document.getElementById('docs-list');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state">— No documents today.</div>';
+    return;
+  }
+  el.innerHTML = items.slice(0, 12).map(d => {
+    const whenLabel = d.sourceDate ? formatShort(d.sourceDate) : '';
+    const rowInner = `
+      <span class="doc-glyph">${escHtml(d.kind)}</span>
+      <div class="doc-info">
+        <div class="doc-title">${escHtml(d.title)}</div>
+        <div class="doc-where">${escHtml(d.where)}${whenLabel ? ` · ${escHtml(whenLabel)}` : ''}</div>
+      </div>
+      <div class="doc-time">${escHtml(d.time || '—')}</div>
+    `;
+    if (d.url) {
+      return `<a href="${escAttr(d.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+        <div class="doc-row clickable">${rowInner}</div>
+      </a>`;
+    }
+    return `<div class="doc-row">${rowInner}</div>`;
+  }).join('');
+}
+
+function renderNumbers(items) {
+  const el = document.getElementById('numbers-grid');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">— No ticket IDs or codes surfaced.</div>';
+    return;
+  }
+  el.innerHTML = items.slice(0, 12).map(n => {
+    const whenLabel = n.sourceDate ? formatShort(n.sourceDate) : '';
+    const metaBottom = [n.time, whenLabel].filter(Boolean).join(' · ');
+    const inner = `
+      <div class="number-card-top">
+        <div class="number-card-label">${escHtml(n.label)}</div>
+      </div>
+      <div class="number-card-value">${escHtml(n.value)}</div>
+      ${n.context ? `<div class="number-card-context">${escHtml(truncate(n.context, 120))}</div>` : ''}
+      ${metaBottom ? `<div class="number-card-time">${escHtml(metaBottom)}</div>` : ''}
+    `;
+    if (n.url) {
+      return `<a href="${escAttr(n.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+        <div class="number-card clickable">${inner}</div>
+      </a>`;
+    }
+    return `<div class="number-card">${inner}</div>`;
+  }).join('');
+}
+
+function renderLinks(items) {
+  const el = document.getElementById('links-list');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state">— No significant links.</div>';
+    return;
+  }
+  // Drop items without a real http(s) URL — they're noise
+  const real = items.filter(l => l.url && /^https?:\/\//i.test(l.url));
+  if (!real.length) {
+    el.innerHTML = '<div class="empty-state">— No significant links.</div>';
+    return;
+  }
+  el.innerHTML = real.slice(0, 15).map(l => {
+    const whenLabel = l.sourceDate ? formatShort(l.sourceDate) : '';
+    const metaBottom = [l.time, whenLabel].filter(Boolean).join(' · ');
+    return `
+    <a href="${escAttr(l.url)}" target="_blank" rel="noopener noreferrer">
+      <div class="link-row">
+        <div class="link-info">
+          <div class="link-row-line">
+            <span class="link-label">${escHtml(l.label)}</span>
+          </div>
+          <div class="link-url">${escHtml(shortenUrl(l.url))}</div>
+        </div>
+        <div class="link-time">${escHtml(metaBottom)}</div>
+      </div>
+    </a>
+  `;}).join('');
+}
+
+function renderSnippets(items) {
+  const el = document.getElementById('snippets-list');
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-state">— Nothing captured for this section yet.</div>';
+    return;
+  }
+  el.innerHTML = items.slice(0, 10).map(s => {
+    const whenLabel = s.sourceDate ? formatShort(s.sourceDate) : '';
+    const metaBits = [s.source, s.time, whenLabel].filter(Boolean);
+    const body = `
+      <p class="snippet-text">${escHtml(s.text)}</p>
+      <div class="snippet-meta">
+        ${metaBits.map((bit, i) =>
+          `${i > 0 ? '<span>·</span>' : ''}<span${i === 0 ? ' class="source"' : ''}>${escHtml(bit)}</span>`
+        ).join('')}
+      </div>
+    `;
+    if (s.url) {
+      return `<a href="${escAttr(s.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">
+        <div class="snippet-row">
+          <div class="snippet-quote">“</div>
+          <div>${body}</div>
+        </div>
+      </a>`;
+    }
+    return `<div class="snippet-row">
+      <div class="snippet-quote">“</div>
+      <div>${body}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ----- Helpers ----- */
+
+function initials(name) {
+  return String(name || '').split(/\s+/).map(s => s[0] || '').slice(0, 2).join('').toUpperCase();
+}
+function hueFromName(name) {
+  let h = 0;
+  const s = String(name || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % 360;
+}
+function docKindFromName(name) {
+  const n = String(name || '').toLowerCase();
+  if (n.endsWith('.pdf')) return 'PDF';
+  if (n.endsWith('.docx') || n.endsWith('.doc')) return 'DOC';
+  if (n.endsWith('.pptx') || n.endsWith('.ppt')) return 'PPT';
+  if (n.endsWith('.xlsx') || n.endsWith('.xls') || n.endsWith('.csv')) return 'XLS';
+  if (n.includes('heptabase')) return 'HEPTA';
+  if (n.includes('obsidian')) return 'OBS';
+  if (n.includes('notion')) return 'NOT';
+  if (n.includes('sharepoint') || n.includes('onedrive')) return 'SP';
+  return 'DOC';
+}
+function labelForTicket(id) {
+  const s = String(id || '');
+  if (/^CS\d/i.test(s)) return 'CS Ticket';
+  if (/^DINC/i.test(s)) return 'DINC';
+  if (/^INC/i.test(s)) return 'Incident';
+  if (/^SR\s*\d/i.test(s)) return 'Service Req';
+  if (/^CHG/i.test(s)) return 'Change';
+  if (/^PRB/i.test(s)) return 'Problem';
+  if (/^\d{4,6}\/\d{4}$/.test(s)) return 'Case';
+  return 'Reference';
+}
+function hostFromUrl(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
+}
+function shortenUrl(url) {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.length > 30 ? u.pathname.slice(0, 30) + '…' : u.pathname;
+    return u.hostname.replace(/^www\./, '') + path;
+  } catch { return url; }
+}
+function formatDateDisplay(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+}
+function formatShort(d) {
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+function truncate(s, n) {
+  if (!s) return '';
+  return s.length > n ? s.slice(0, n).trim() + '…' : s;
+}
+function escHtml(s) {
+  if (s == null) return '';
+  const div = document.createElement('div');
+  div.textContent = String(s);
+  return div.innerHTML;
+}
+function escAttr(s) { return escHtml(s).replace(/"/g, '&quot;'); }
+
+async function openPersonPanel(personId, name) {
+  const overlay = document.getElementById('person-panel-overlay');
+  const panel = document.getElementById('person-panel');
+  const body = document.getElementById('person-panel-body');
+  body.innerHTML = `
+    <div class="person-panel-eyebrow">Person</div>
+    <div class="person-panel-name">${escHtml(name)}</div>
+    <div class="person-panel-loading">Loading…</div>
+  `;
+  overlay.classList.add('active');
+  panel.classList.add('active');
+
+  try {
+    const data = await fetch(`/api/people/${personId}`).then(r => r.json());
+    if (data.error) {
+      body.querySelector('.person-panel-loading').textContent = 'Not found.';
+      return;
+    }
+    const p = data.person || {};
+    const acts = data.activity || [];
+    const genAt = p.weekly_summary_generated_at ? p.weekly_summary_generated_at.split('T')[0] : null;
+    const firstSeen = p.first_seen ? p.first_seen.split('T')[0] : '—';
+    body.innerHTML = `
+      <div class="person-panel-eyebrow">Person</div>
+      <div class="person-panel-name">${escHtml(p.name || name)}</div>
+      <div class="person-panel-meta">${p.interaction_count || 0} interactions · since ${firstSeen}</div>
+
+      <div class="person-panel-section-head">This week</div>
+      ${p.weekly_summary
+        ? `<div class="person-panel-summary">${escHtml(p.weekly_summary)}</div>
+           ${genAt ? `<div class="person-panel-summary-meta">Generated ${genAt}</div>` : ''}`
+        : `<div class="person-panel-summary empty">Quiet this week — no recent interactions captured.</div>`}
+
+      <div class="person-panel-section-head">Recent activity</div>
+      ${acts.length
+        ? acts.map(a => {
+            const ts = a.timestamp || '';
+            const day = ts.split('T')[0] || '';
+            const tm = (ts.split('T')[1] || '').substring(0, 5);
+            return `
+              <div class="person-activity-item">
+                <div class="person-activity-time">
+                  ${escHtml(day)} ${escHtml(tm)}
+                  ${a.interaction_type ? `<span class="person-activity-badge">${escHtml(a.interaction_type)}</span>` : ''}
+                  ${a.category ? `<span class="person-activity-badge" style="background:#5a7a4a">${escHtml(a.category)}</span>` : ''}
+                </div>
+                <div class="person-activity-context">${escHtml(a.span_description || a.context || '')}</div>
+              </div>
+            `;
+          }).join('')
+        : '<div class="person-panel-empty">No activity recorded.</div>'}
+    `;
+  } catch (e) {
+    body.innerHTML = `<div class="person-panel-empty">Failed to load: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function closePersonPanel() {
+  document.getElementById('person-panel-overlay').classList.remove('active');
+  document.getElementById('person-panel').classList.remove('active');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePersonPanel();
+});
+
+loadMemory();
+setInterval(loadMemory, 120000);
+</script>
+
+<div class="person-panel-overlay" id="person-panel-overlay" onclick="closePersonPanel()"></div>
+<aside class="person-panel" id="person-panel">
+  <button class="person-panel-close" onclick="closePersonPanel()" aria-label="Close">&times;</button>
+  <div id="person-panel-body"></div>
+</aside>
+</body>
+</html>
