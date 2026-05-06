@@ -9,7 +9,6 @@ Usage:
 import argparse
 import logging
 import os
-import sys
 
 from tracker.capture import run_capture_loop
 from tracker.db import DEFAULT_DB_PATH

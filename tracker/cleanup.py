@@ -10,7 +10,6 @@ import os
 import logging
 import shutil
 from datetime import date, timedelta
-from pathlib import Path
 
 from tracker.db import DEFAULT_DB_PATH, get_connection, init_db
 from tracker.screenshot import DEFAULT_SCREENSHOT_DIR

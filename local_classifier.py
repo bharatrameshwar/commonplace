@@ -8,7 +8,6 @@ Calls the same DB functions as the MCP server — no MCP round-trips needed.
 import json
 import logging
 import time
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -23,7 +22,6 @@ from tracker.db import (
     insert_activity_span,
     get_connection,
     init_db,
-    get_categories,
     insert_memory_item,
     has_memory_items_for_span,
 )
@@ -676,7 +674,6 @@ def merge_micro_spans(spans: list, gap_seconds: int = 30, max_block_minutes: int
                 continue
 
             # Split into time-based chunks
-            from datetime import timedelta
             chunk_start = 0
             first_ts = datetime.fromisoformat(rows[0]["timestamp"])
             for k, row in enumerate(rows):

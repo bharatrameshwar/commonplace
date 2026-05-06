@@ -1143,7 +1143,6 @@ def api_memory_window():
     # Call api_memory logic for each day and merge
     # We can't easily reuse the function directly (it reads ?date via _parse_date),
     # so we call the endpoint function and then merge manifests.
-    import copy
     with app.test_request_context(f"/api/memory?date={end.isoformat()}"):
         merged = {
             "date": end.isoformat(),
