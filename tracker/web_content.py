@@ -7,7 +7,6 @@ Runs in a daemon thread to avoid blocking the capture loop.
 
 import logging
 import queue
-import re
 import threading
 from typing import Optional
 from urllib.parse import urlparse

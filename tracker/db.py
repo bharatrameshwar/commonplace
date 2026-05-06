@@ -4,7 +4,7 @@ from datetime import datetime, date, timedelta
 from pathlib import Path
 from typing import Optional
 
-from tracker.models import Observation, ActivitySpan, WebPage, Person
+from tracker.models import Observation, ActivitySpan
 
 DEFAULT_DB_PATH = os.path.expanduser("~/.local/share/commonplace/activity.db")
 

@@ -1,9 +1,14 @@
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "commonplace"
 version = "0.1.0"
 description = "Local-first macOS activity tracker with AI-powered classification, a daily commonplace book, and an MCP server for Claude."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Bharat Rameshwar" },
 ]
@@ -26,3 +31,20 @@ dev = [
 Homepage = "https://github.com/bharatrameshwar/commonplace"
 Repository = "https://github.com/bharatrameshwar/commonplace"
 Issues = "https://github.com/bharatrameshwar/commonplace/issues"
+
+[tool.setuptools]
+# Only `tracker/` is a real Python package. Other top-level dirs (templates,
+# scripts, .github) ship in the repo but aren't installable modules.
+packages = ["tracker"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+# Default selection (E, F) is fine. Ignore stylistic-only rules that catch
+# debugging-leftover assignments and short loop names — they don't matter here.
+ignore = [
+    "E741",  # ambiguous variable names (l, I, O) — used in tight comprehensions
+    "F841",  # unused local variable assignments — often left as docs/breadcrumbs
+]
