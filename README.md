@@ -15,11 +15,27 @@ Everything stays on your machine. No cloud, no telemetry, no accounts.
 
 **Dashboard** — today's timeline, hourly bars, focus score, category breakdown.
 
-![Dashboard](docs/screenshots/dashboard.png)
+![Dashboard](docs/screenshots/dashboard_light.png)
+
+<details><summary>Dark mode</summary>
+
+![Dashboard — dark](docs/screenshots/dashboard.png)
+
+</details>
 
 **Reports** — week-on-week trends and category comparison.
 
-![Reports](docs/screenshots/reports.png)
+![Reports](docs/screenshots/report_light.png)
+
+<details><summary>Dark mode</summary>
+
+![Reports — dark](docs/screenshots/reports.png)
+
+</details>
+
+**Commonplace Book** — your daily memory: people, documents, links, tickets, snippets — searchable, with a click-to-zoom panel for each person.
+
+![Commonplace Book](docs/screenshots/commonplace_light.png)
 
 ## Requirements
 
