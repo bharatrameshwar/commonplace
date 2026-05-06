@@ -13,7 +13,13 @@ Everything stays on your machine. No cloud, no telemetry, no accounts.
 
 ## Screenshots
 
-*(coming with the first release post)*
+**Dashboard** — today's timeline, hourly bars, focus score, category breakdown.
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+**Reports** — week-on-week trends and category comparison.
+
+![Reports](docs/screenshots/reports.png)
 
 ## Requirements
 
